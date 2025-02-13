@@ -1,37 +1,63 @@
-import { Devvit } from '@devvit/public-api';
-import { appSettings } from './settings.js';
-import { handleCommentOrPostDeleteEvent, handleModActionEvent } from './handlers.js';
-import { onAppFirstInstall, onAppInstallOrUpgrade } from './installEvents.js';
-import { CDP_ENFORCEMENT_TASK } from './constants.js';
-import { enforceContentDeletionPolicy } from './cdpEnforcement.js';
+import { Devvit } from "@devvit/public-api";
+import { onWikiRevision, onProcessMessageQueue, onCheckSignsOfLife } from "./server/index.js";
+import { onCommentChanged, onForwardEvents, onModAction, onPostChanged, onThingDeleted } from "./client/index.js";
+import { appSettings } from "./settings.js";
+import { onAppInstallAndUpgrade } from "./installEvents.js";
+import { SJ_FORWARD_EVENTS, SJ_PROCESS_QUEUE, SJ_SIGNS_OF_LIFE } from "./constants.js";
 
-Devvit.configure({ redis: true, redditAPI: true });
+Devvit.configure({ redditAPI: true, redis: true });
 
 Devvit.addSettings(appSettings);
 
+/** client */
+
 Devvit.addTrigger({
-  events: [ 'CommentDelete', 'PostDelete' ],
-  onEvent: handleCommentOrPostDeleteEvent 
+    events: [ 'CommentSubmit', 'CommentUpdate' ],
+    onEvent: onCommentChanged
 });
 
 Devvit.addTrigger({
-  event: 'ModAction',
-  onEvent: handleModActionEvent
+    events: [ 'PostSubmit', 'PostUpdate' ],
+    onEvent: onPostChanged
 });
 
 Devvit.addTrigger({
-  event: 'AppInstall',
-  onEvent: onAppFirstInstall
+    events: [ 'CommentDelete', 'PostDelete' ],
+    onEvent: onThingDeleted
 });
 
 Devvit.addTrigger({
-  events: [ 'AppInstall', 'AppUpgrade' ],
-  onEvent: onAppInstallOrUpgrade
+    event: 'ModAction',
+    onEvent: onModAction
 });
 
 Devvit.addSchedulerJob({
-  name: CDP_ENFORCEMENT_TASK,
-  onRun: enforceContentDeletionPolicy,
+    name: SJ_FORWARD_EVENTS,
+    onRun: onForwardEvents
+});
+
+/** server */
+
+Devvit.addTrigger({
+    event: 'ModAction',
+    onEvent: onWikiRevision
+});
+
+Devvit.addSchedulerJob({
+    name: SJ_PROCESS_QUEUE,
+    onRun: onProcessMessageQueue
+});
+
+Devvit.addSchedulerJob({
+    name: SJ_SIGNS_OF_LIFE,
+    onRun: onCheckSignsOfLife
+});
+
+/** shared */
+
+Devvit.addTrigger({
+    events: [ 'AppInstall', 'AppUpgrade' ],
+    onEvent: onAppInstallAndUpgrade
 });
 
 export default Devvit;

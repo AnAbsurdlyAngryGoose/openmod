@@ -1,86 +1,82 @@
-import { TriggerContext } from '@devvit/public-api';
-import { AppSetting } from './settings.js';
-import { Temporal } from '@js-temporal/polyfill';
-import { futureDate } from './temporal.js';
+import { TriggerContext } from "@devvit/public-api";
+import { now, seconds } from "./temporal.js";
+import { BasicUserData, SpecialAccountName, UserID } from "./types.js";
+import { SPECIAL_ACCOUNT_IDS, SPECIAL_ACCOUNT_ID_TO_NAME, SPECIAL_ACCOUNT_NAMES, SPECIAL_ACCOUNT_NAME_TO_ID } from "./constants.js";
 
-export const isModerator = async (context: TriggerContext, subredditName: string, username: string | string[]) => {
-    const moderators = await context.reddit.getModerators({ subredditName }).all();
-    return moderators.some(moderator => username.includes(moderator.username));
+export const isEventDuplicated = async (event: string, context: TriggerContext): Promise<boolean> => {
+    const key = `event:${event}`;
+    const marker = await context.redis.get(key);
+
+    if (!marker) {
+        await context.redis.set(key, `${now()}`);
+        await context.redis.expire(key, seconds({ days: 14 }));
+        console.debug(`event ${event} is a duplicate, the expiry has been refreshed`);
+    }
+
+    return !!marker;
 };
 
-export const isApprovedUserOf = async (context: TriggerContext, subredditName: string, username: string | string[]) => {
-    const approvedUsers = await context.reddit.getApprovedUsers({ subredditName }).all();
-    return approvedUsers.some(user => username.includes(user.username));
+export const getBasicUserInfoByUsername = async (username: string, context: TriggerContext): Promise<BasicUserData> => {
+    if (SPECIAL_ACCOUNT_NAMES.includes(username)) {
+        const normalised = username === SpecialAccountName.Redacted ? SpecialAccountName.AntiEvilOperations : username;
+        console.debug(`found special account ${normalised}`);
+        return {
+            id: SPECIAL_ACCOUNT_NAME_TO_ID[normalised],
+            username: normalised,
+            isAdmin: true,
+            isApp: false
+        };
+    }
+
+    const user = await context.reddit.getUserByUsername(username);
+    if (!user) {
+        console.debug(`${username} unavailable`);
+        return {
+            id: SPECIAL_ACCOUNT_NAME_TO_ID[SpecialAccountName.Unavailable],
+            username: SpecialAccountName.Unavailable,
+            isAdmin: false,
+            isApp: false
+        };
+    }
+
+    console.debug(`found user ${user.username}`);
+    return {
+        id: user.id as UserID,
+        username: user.username,
+        isAdmin: user.isAdmin,
+        isApp: false
+    };
 };
 
-/**
- * Check if the app passes basic tests for correct operation
- * @param context 
- * @returns true if it is possible to proceed, otherwise false
- */
-export const appPassesPreflightChecks = async (context: TriggerContext) => {
-    const currentSubreddit = await context.reddit.getCurrentSubreddit();
-    if (!currentSubreddit) {
-        console.error('The current subreddit was not set — the platform may be down');
-        return false;
+export const getBasicUserInfoById = async (id: UserID, context: TriggerContext): Promise<BasicUserData> => {
+    if (SPECIAL_ACCOUNT_IDS.includes(id)) {
+        const username = SPECIAL_ACCOUNT_ID_TO_NAME[id];
+        const normalised = username === SpecialAccountName.Redacted ? SpecialAccountName.AntiEvilOperations : username;
+        console.debug(`found special account ${normalised}`);
+        return {
+            id: SPECIAL_ACCOUNT_NAME_TO_ID[normalised],
+            username: normalised,
+            isAdmin: true,
+            isApp: false
+        };
     }
 
-    const appUser = await context.reddit.getAppUser();
-    if (!appUser) {
-        console.error('Unable to query the application user account — the platform may be down');
-        return false;
+    const user = await context.reddit.getUserById(id);
+    if (!user) {
+        console.debug(`${id} unavailable`);
+        return {
+            id: SPECIAL_ACCOUNT_NAME_TO_ID[SpecialAccountName.Unavailable],
+            username: SpecialAccountName.Unavailable,
+            isAdmin: false,
+            isApp: false
+        };
     }
 
-    const targetSubreditName = await context.settings.get(AppSetting.TargetSubredit) as string;
-    if (!targetSubreditName) {
-        console.error(`The target subreddit has not been configured by the moderators of ${currentSubreddit.name}`);
-        return false;
-    }
-
-    const targetSubreddit = await context.reddit.getSubredditInfoByName(targetSubreditName);
-    if (!targetSubreddit || !targetSubreddit.name) { // todo: check if the subreddit is private
-        console.error(`The target subreddit, ${targetSubreditName}, does not exist or is inaccessible`);
-        return false;
-    }
-
-    // Check if the app is an approved user of the target subreddit
-    const isApprovedUser = await isApprovedUserOf(context, targetSubreddit.name, appUser.username);
-    if (!isApprovedUser) {
-        console.error(`The application user account is not an approved user of ${targetSubreddit.name}`);
-        return false;
-    }
-
-    // Check that at least one of the moderators of the current subreddit is also a moderator of the target subreddit
-    const moderators = await currentSubreddit.getModerators().all();
-    const anyModeratorsOfCurrentAlsoModerateTarget  = await isModerator(context, targetSubreddit.name, moderators.map(m => m.username));
-    if (!anyModeratorsOfCurrentAlsoModerateTarget) {
-        console.error(`None of the moderators of ${currentSubreddit.name} are moderators of ${targetSubreddit.name}`);
-        return false;
-    }
-
-    return true;
-};
-
-/**
- * A type that represents the absence of a value
- */
-export type Nothing = { };
-
-/**
- * Check if an event has been observed before and, if not, record the observation
- * @param context the trigger context
- * @param thingId the event identifier
- * @returns true if the event has been observed already, otherwise false
- */
-export const eventHasBeenProcessed = async (context: TriggerContext, thingId: string) => {
-    const sentinel = await context.redis.get(`event:${thingId}`);
-
-    // if we have no record of the event, mark it as seen
-    if (!sentinel) {
-        await context.redis.set(`event:${thingId}`, `${Temporal.Now.instant().epochMilliseconds}`, {
-            expiration: futureDate({ days: 28 })
-        });
-    }
-
-    return !!sentinel;
+    console.debug(`found user ${user.username}`);
+    return {
+        id: user.id as UserID,
+        username: user.username,
+        isAdmin: user.isAdmin,
+        isApp: false
+    };
 };

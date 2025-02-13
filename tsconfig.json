@@ -1,6 +1,7 @@
 {
   "extends": "@devvit/public-api/devvit.tsconfig.json",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    "noImplicitAny": true,
   }
 }

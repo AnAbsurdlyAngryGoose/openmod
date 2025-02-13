@@ -1,39 +1,66 @@
 Open Mod is a small application that reproduces a public extract of your subreddit's moderation log, enabling greater transparency for moderation teams and empowering users to better understand how your community is moderated.
 
-The application is triggered when a moderation action is taken. Information about the moderation action, including the type, actor, target, relevant submission, and reason is collated, and then formatted for submission in the configured _destination_ subreddit.
+The application is triggered when a moderation action is taken. Information about the moderation action, including but not limited to the type, actor, target, and relevant submission is collated, and then formatted for submission in the configured _destination_ subreddit.
 
 The application is additionally triggered upon the deletion of a submission. In this case, any relevant posts made as a result of the previous trigger are edited in line with Reddit content policies. See [data stored](#data-stored) for more information.
+
+**By using Open Mod you agree to extracts from your moderation log being made publicly available.**
+
+## Installing Open Mod
+
+To install Open Mod, please add the application to the community from which you would like to reproduce mod logs (the "origin") and the community to which you would like to publish them (the "destination"). Publishing logs to the community from which they originate is **not supported**.
+
+You must then configure the application in the "origin" community.
+
+Example: I would like to publish logs from r/FancySubreddit to r/FancySubredditLogs.
+
+Steps:
+
+- Install the application in r/FancySubreddit.
+- Install the application in r/FancySubredditLogs.
+- In r/FancySubreddit, configure the application by setting "Destination Subreddit" to "FancySubredditLogs" (without quotes).
+- Optionally, in r/FancySubreddit, adjust the remaining settings to my liking.
 
 ## Configuration
 
 Open Mod is configurable, and supports the following options.
 
-- The subreddit in which to post the public extracts,
+- **(Required)** The subreddit in which to post the public extracts,
 - Whether or not to include Reddit admins in the public extract,
 - Whether or not to include automoderator in the public extract,
+- Whether or not to include cached submission content in the public extract,
 - Selection of which moderation actions to create extracts from,
 - A list of moderators to exclude from the public extract, and
 - A list of users to exclude from the public extract
 
 By default, Open Mod only creates extracts for bans (but not unbans), mutes (but not unmutes), removing posts or marking them as spam, and removing comments or marking them as spam.
 
-In order for Open Mod to function, it must be an approved user in the destination subreddit, and at least one moderator of the origin subreddit must also be a moderator of the destination subreddit.
-
 ## Data Stored
 
-This application stores the `userid` and `thingid` associated with each moderation action in a Redis data store. Additionally, the acpplication stores the permalink associated with an action(when applicable), the name of the moderator that took the action, the type of the action, and the time the action was taken.
+Open Mod stores metadata including `t1` and `t3` identifiers, creation timestamps, permalinks, moderation action types, and account metadata, f.ex. whether the account is a Reddit admin. Additionally, identifiable data including `t2` identifiers and submitted content may also be cached for later retrieval.
 
-If the application is removed from a subreddit, all data is deleted.
+Data is stored securely, and cannot be access by the developers, moderators, or users.
 
-In line with the [Content Deletion Policy](https://developers.reddit.com/docs/guidelines#content-deletion-policy), data associated with a user is removed when they delete a related submission, their account, or they are suspended.
+Data is ring-fenced in your subreddit, and cannot be accessed by installations of Open Mod in other subreddits.
+
+If you remove Open Mod from your subreddit, all data collected up to that point is deleted.
+
+Open Mod implements the [Content Deletion Policy](https://developers.reddit.com/docs/guidelines#content-deletion-policy).
 
 ## About
 
-This app is open source and licenced under the [GNU AGPL v3](https://choosealicense.com/licenses/agpl-3.0/) licence. You can find the source code on GitHub [here](https://github.com/leifwritescode/openmod).
+This app is open source and licenced under the [AGPL v3](https://choosealicense.com/licenses/agpl-3.0/) licence. You can find the source code on GitHub [here](https://github.com/AnAbsurdlyAngryGoose/openmod).
 
 With special thanks to u/xenc for their help testing the app, and to u/fsv for their support implementing CDP enforcement (and for inspiring the format of this README).
 
-## Version History
+## Change History
+
+### v1.2
+
+- Fixes an issue that prevented the proper operation of Open Mod.
+- Public extracts may now include a cached copy of moderated content.
+  - This option is configurable, and **disabled** by default.
+- Extract titles now include the originating subreddit name.
 
 ### v1.0.1
 
