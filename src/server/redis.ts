@@ -3,7 +3,7 @@ import { CommentID, PostID, ThingID, UserID, CacheType, CachedComment, CachedPos
 import { now, seconds } from "../temporal.js";
 import { RK_SIGNS_OF_LIFE, SPECIAL_ACCOUNT_NAME_TO_ID } from "../constants.js";
 import { isRecordEmpty } from "./utility.js";
-import { getBasicUserInfoById } from "../utility.js";
+import { getBasicUserInfoById, getCommentById, getPostById } from "../reddit.js";
 
 const RK_CACHED_THING = (thing: ThingID): string => {
     return `cache:${thing}`;
@@ -29,11 +29,14 @@ export const cacheComment = async (comment: Comment, context: TriggerContext) : 
         permalink: comment.permalink,
     };
 
-    await context.redis.hSet(RK_CACHED_THING(comment.id), data);
-    await context.redis.expire(RK_CACHED_THING(comment.id), seconds({ days: 28 }));
+    return await internalCacheComment(comment.id, data, context);
+};
 
-    console.debug(`refreshed cached comment ${comment.id} and set it to expire in 28 days`);
-    return data;
+const internalCacheComment = async (id: CommentID, comment: CachedComment, context: TriggerContext) : Promise<CachedComment> => {
+    await context.redis.hSet(RK_CACHED_THING(id), comment);
+    await context.redis.expire(RK_CACHED_THING(id), seconds({ days: 28 }));
+    console.debug(`refreshed cached comment ${id} and set it to expire in 28 days`);
+    return comment;
 };
 
 export const getCachedComment = async (commentid: CommentID, context: TriggerContext): Promise<CachedComment> => {
@@ -45,9 +48,14 @@ export const getCachedComment = async (commentid: CommentID, context: TriggerCon
         return data as CachedComment;
     }
 
-    const comment = await context.reddit.getCommentById(commentid);
+    const comment = await getCommentById(commentid, context);
     if (!comment) {
-        throw new Error(`unable to find comment ${commentid} while refreshing the cache`);
+        return await internalCacheComment(commentid, {
+            type: CacheType.Comment,
+            author: SPECIAL_ACCOUNT_NAME_TO_ID[SpecialAccountName.Unavailable],
+            body: '[ unavailable ]',
+            permalink: '[ unavailable ]',
+        }, context);
     }
 
     return await cacheComment(comment, context);
@@ -83,12 +91,7 @@ export const getCachedUser = async (userid: UserID, context: TriggerContext): Pr
         return data as CachedUser;
     }
 
-    // need to handle the case where this fails - e.g. user is deleted/suspended
     let user = await getBasicUserInfoById(userid, context);
-    if (!user) {
-        throw new Error(`unable to find user ${userid} while refreshing the cache`);
-    }
-
     return await cacheUser(user, context);
 };
 
@@ -102,11 +105,14 @@ export const cachePost = async (post: Post, context: TriggerContext) : Promise<C
         permalink: post.permalink,
     };
 
-    await context.redis.hSet(RK_CACHED_THING(post.id), data);
-    await context.redis.expire(RK_CACHED_THING(post.id), seconds({ days: 28 }));
+    return await internalCachePost(post.id, data, context);
+};
 
-    console.debug(`refreshed cached post ${post.id} and set it to expire in 28 days`);
-    return data;
+const internalCachePost = async (id: PostID, post: CachedPost, context: TriggerContext) : Promise<CachedPost> => {
+    await context.redis.hSet(RK_CACHED_THING(id), post);
+    await context.redis.expire(RK_CACHED_THING(id), seconds({ days: 28 }));
+    console.debug(`refreshed cached post ${id} and set it to expire in 28 days`);
+    return post;
 };
 
 export const getCachedPost = async (linkid: PostID, context: TriggerContext): Promise<CachedPost> => {
@@ -118,9 +124,16 @@ export const getCachedPost = async (linkid: PostID, context: TriggerContext): Pr
         return data as CachedPost;
     }
 
-    const post = await context.reddit.getPostById(linkid);
+    const post = await getPostById(linkid, context);
     if (!post) {
-        throw new Error(`unable to find post ${linkid} while refreshing the cache`);
+        return await internalCachePost(linkid, {
+            type: CacheType.Post,
+            author: SPECIAL_ACCOUNT_NAME_TO_ID[SpecialAccountName.Unavailable],
+            title: '[ unavailable ]',
+            url: '[ unavailable ]',
+            body: '[ unavailable ]',
+            permalink: '[ unavailable ]',
+        }, context);
     }
 
     return await cachePost(post, context);

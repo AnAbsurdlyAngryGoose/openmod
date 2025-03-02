@@ -4,6 +4,7 @@ import { CommentID, ModActionType, PostID, UserID, CachedComment, CachedPost, Ca
 import { MOD_ACTION_PAST_SIMPLE, MOD_ACTION_PREPOSITION } from "../../constants.js";
 import { addModAction, getCachedComment, getCachedPost, getCachedUser } from "../redis.js";
 import { isCommentID, isPostID } from "../utility.js";
+import { getCurrentSubredditName, getSubredditInfoById, submitPost } from "../../reddit.js";
 
 const isModEvent = (message: ProtocolMessage): message is ModActionMessage => {
     return message.type === ProtocolEvent.ModAction;
@@ -46,12 +47,18 @@ const gatherContext = async (message: ModActionMessage, context: TriggerContext)
 
 export const handleModActionMessage = async (message: ProtocolMessage, context: TriggerContext): Promise<void> => {
     if (!isModEvent(message)) {
-        console.error(`i find myself in a strange situation, where message is not a modaction: ${JSON.stringify(MessageEvent)}}`);
+        console.error(`i find myself in a strange situation, where message is not a modaction: ${JSON.stringify(message)}}`);
         return;
     }
 
+    const subredditName = await getCurrentSubredditName(context);
+    if (!subredditName) {
+        throw new Error("i couldn't work out where i am - is reddit down?");
+    }
+
     const moderator = await getCachedUser(message.mod, context);
-    const subreddit = await context.reddit.getSubredditInfoById(message.sid);
+
+    const subreddit = await getSubredditInfoById(message.sid, context);
     if (!moderator || !subreddit || !subreddit.name) {
         console.error("failed to read moderator or subreddit info");
         return;
@@ -92,8 +99,10 @@ export const handleModActionMessage = async (message: ProtocolMessage, context: 
     text += `Permalink:\n\n${permalink.startsWith("https") ? "" : "https://reddit.com"}${permalink}\n\n\n\n`;
     text += `^(This content was automatically generated, and correct as of the time of posting. Changes to the content, such as edits or deletions, may not be reflected here.)`;
 
-    const subredditName = await context.reddit.getCurrentSubredditName();
-    const submitted = await context.reddit.submitPost({ subredditName, title, text });
+    const submitted = await submitPost({ subredditName, title, text }, context);
+    if (!submitted) {
+        throw new Error("failed to submit post");
+    }
 
     const normalised = submitted.id.replace("t3_", "");
     console.debug(`submitted extract https://reddit.com/r/${subredditName}/comments/${normalised}`);

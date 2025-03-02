@@ -2,6 +2,8 @@ import { TriggerContext } from "@devvit/public-api";
 import { ProtocolMessage } from "../../protocol.js";
 import { isEventDuplicated } from "../../utility.js";
 import { cachePost, cacheUser, trackThing } from "../redis.js";
+import { getBasicUserInfoByUsername, getPostById } from "../../reddit.js";
+import { PostID } from "../../types.js";
 
 export const handlePostChangedMessage = async (message: ProtocolMessage, context: TriggerContext): Promise<void> => {
     const tid = message.tid;
@@ -9,7 +11,7 @@ export const handlePostChangedMessage = async (message: ProtocolMessage, context
     // need to pull the real comment so that we can navigate it
     // open mod respects the privacy of users, so if a user blocks open mod
     // this call will fail, and the event will be ignored
-    const post = await context.reddit.getPostById(tid);
+    const post = await getPostById(tid as PostID, context);
     if (!post) {
         console.debug(`post ${tid} not found`);
         return;
@@ -22,13 +24,12 @@ export const handlePostChangedMessage = async (message: ProtocolMessage, context
         return;
     }
 
-    const author = await post.getAuthor();
+    const author = await getBasicUserInfoByUsername(post.authorName, context);
     if (!author) {
         console.debug(`user ${post.authorId} not found`);
         return;
     }
 
-    // todo what if the user posting is u/reddit?
     await cachePost(post, context);
     await cacheUser(author, context);
     await trackThing(post, context);

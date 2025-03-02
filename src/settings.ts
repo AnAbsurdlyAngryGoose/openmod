@@ -1,4 +1,5 @@
 import { Devvit, SettingsFormField, SettingsFormFieldValidatorEvent, TriggerContext } from '@devvit/public-api';
+import { getCurrentSubredditName } from './reddit.js';
 
 export enum AppSetting {
     TargetSubreddit = 'targetSubredit',
@@ -128,8 +129,8 @@ export const appSettings: SettingsFormField[] = [
 export const isServer = async (context: TriggerContext): Promise<boolean> => {
     const destination = await context.settings.get<string>(AppSetting.TargetSubreddit);
 
-    // we are the server if the target subreddit is not configured
-    if (!destination) {
+    // we are the server if the target subreddit is not configured or is an empty string
+    if (!destination || destination.trim().length === 0) {
         return true;
     }
 
@@ -137,14 +138,20 @@ export const isServer = async (context: TriggerContext): Promise<boolean> => {
     // is the same as the one we're executing in
     // this is for a scenario where the user wants to record actions in the same subreddit as
     // they're generated from
-    const currentSubreddit = await context.reddit.getCurrentSubredditName();
+    const currentSubreddit = await getCurrentSubredditName(context);
+    if (!currentSubreddit) {
+        // couldn't get info about the subreddit, so let's just assume we're the server
+        return true;
+    }
+
     return destination.trim().toLowerCase() === currentSubreddit.trim().toLowerCase();
 };
 
 export const isClient = async (context: TriggerContext): Promise<boolean> => {
     const destination = await context.settings.get<string>(AppSetting.TargetSubreddit);
 
-    if (!destination) {
+    // we are not the client if the destination subreddit is not configured or is an empty string
+    if (!destination || destination.trim().length === 0) {
         return false;
     }
 

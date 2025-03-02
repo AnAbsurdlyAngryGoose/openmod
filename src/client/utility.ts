@@ -1,5 +1,7 @@
 import { CommentSubmit, CommentUpdate, PostSubmit, PostUpdate, CommentDelete, PostDelete, ModAction } from "@devvit/protos";
 import { CommentID, PostID, ThingID, UserID } from "../types.js";
+import { getBasicUserInfoById, getBasicUserInfoByUsername } from "../reddit.js";
+import { TriggerContext } from "@devvit/public-api";
 
 export const isCommentSubmit = (event: CommentSubmit | CommentUpdate): event is CommentSubmit => {
     return !('previousBody' in event);
@@ -25,29 +27,33 @@ export const sha256 = async (data: any): Promise<string> => {
     return hash;
 };
 
-export const getModeratedThingId = (event: ModAction): ThingID => {
+export const getModeratedThingId = async (event: ModAction, context: TriggerContext): Promise<ThingID> => {
     const action = event.action;
-    if (!action) throw new Error('missing action in mod action event');
+    if (!action) throw new Error('modaction structure in unusable state: missing action field');
 
     if (action.endsWith("comment")) {
-        if (!event.targetComment) throw new Error('missing targetComment in mod action event');
+        if (!event.targetComment) throw new Error('modaction structure in unusable state: missing targetComment field');
 
         console.debug(`moderated thing is a comment`);
         return event.targetComment.id as CommentID;
     }
 
     if (action.endsWith("link")) {
-        if (!event.targetPost) throw new Error('missing targetPost in mod action event');
+        if (!event.targetPost) throw new Error('modaction structure in unusable state: missing targetPost field');
 
         console.debug(`moderated thing is a post`);
         return event.targetPost.id as PostID;
     }
 
     if (action.endsWith("user")) {
-        if (!event.targetUser) throw new Error('missing targetUser in mod action event');
+        if (!event.targetUser) throw new Error('modaction structure in unusable state: missing targetUser field');
 
         console.debug(`moderated thing is a user`);
-        return event.targetUser.id as UserID;
+
+        // potentially, the moderated user is a special account, in which case the id may not be set
+        // search it out by username and see what we get
+        const user = await getBasicUserInfoByUsername(event.targetUser.name, context);
+        return user.id;
     }
 
     if (action.endsWith("lock")) {
@@ -59,11 +65,11 @@ export const getModeratedThingId = (event: ModAction): ThingID => {
         }
     
         // it's not a comment, which means it's a post, so make sure the post does in fact exist here
-        if (!event.targetPost?.id) throw new Error('missing targetPost in mod action event');
+        if (!event.targetPost?.id) throw new Error('modaction structure in unusable state: missing targetPost field');
 
         console.debug(`moderated thing is a post`);
         return event.targetPost.id as PostID;
     }
 
-    throw new Error(`unsupported action in mod action event: ${action}`);
+    throw new Error(`modaction structure in unusable state: unexpected action ${action}`);
 };

@@ -2,7 +2,7 @@ Open Mod is a small application that reproduces a public extract of your subredd
 
 The application is triggered when a moderation action is taken. Information about the moderation action, including but not limited to the type, actor, target, and relevant submission is collated, and then formatted for submission in the configured _destination_ subreddit.
 
-The application is additionally triggered upon the deletion of a submission. In this case, any relevant posts made as a result of the previous trigger are edited in line with Reddit content policies. See [data stored](#data-stored) for more information.
+The application is additionally triggered upon the deletion of a submission. In this instance, data held about that submission is removed. See [data stored](#data-stored) for more information.
 
 **By using Open Mod you agree to extracts from your moderation log being made publicly available.**
 
@@ -54,6 +54,10 @@ This app is open source and licenced under the [AGPL v3](https://choosealicense.
 With special thanks to u/xenc for their help testing the app, and to u/fsv for their support implementing CDP enforcement (and for inspiring the format of this README).
 
 ## Change History
+
+### v1.2.1
+
+- Miscellaneous fixes.
 
 ### v1.2
 

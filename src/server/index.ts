@@ -8,6 +8,7 @@ import { handleMessage } from "./message-handling/index.js";
 import { ProtocolMessage } from "../protocol.js";
 import { userIsActive } from "./utility.js";
 import { delCacheOf, delTrackingSet } from "./redis.js";
+import { getWikiPage } from "../reddit.js";
 
 export const onWikiRevision = async (event: ModAction, context: TriggerContext) => {
     if (!event.subreddit || !event.moderator || !event.action) {
@@ -21,7 +22,7 @@ export const onWikiRevision = async (event: ModAction, context: TriggerContext) 
     }
 
     // get the page, if it doesn't exist we're in the wrong place
-    const wikiPage = await context.reddit.getWikiPage(event.subreddit.name, WP_OPEN_MOD_EVENTS);
+    const wikiPage = await getWikiPage(event.subreddit.name, WP_OPEN_MOD_EVENTS, context);
     if (!wikiPage) {
         console.error(`wiki page not found in ${event.subreddit.name}`);
         return;

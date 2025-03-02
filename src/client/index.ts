@@ -14,7 +14,8 @@ import { CommentID, ModActionType, Nothing, PostID, SubredditID, UserID } from "
 import { AppSetting, isClient } from "../settings.js";
 import { ProtocolEvent, ProtocolMessage } from "../protocol.js";
 import { getModeratedThingId, isCommentDelete, isCommentSubmit, isPostSubmit, sha256 } from "./utility.js";
-import { getBasicUserInfoByUsername, isEventDuplicated } from "../utility.js";
+import { isEventDuplicated } from "../utility.js";
+import { getBasicUserInfoByUsername, getCurrentSubredditName, updateWikiPage } from "../reddit.js";
 
 export const onCommentChanged = async (event: CommentSubmit | CommentUpdate, context: TriggerContext) => {
     const iAmTheClient = await isClient(context);
@@ -177,7 +178,11 @@ export const onModAction = async (event: ModAction, context: TriggerContext) => 
         return;
     }
 
-    const subredditName = await context.reddit.getCurrentSubredditName();
+    const subredditName = await getCurrentSubredditName(context);
+    if (!subredditName) {
+        throw new Error(`i couldn't work out where i am - is reddit down?`);
+    }
+
     const subredditModTeam = `${subredditName}-ModTeam`;
     if (event.moderator.name === subredditModTeam) {
         console.debug(`modaction ${event.action} by ${event.moderator.id} is excluded`);
@@ -187,8 +192,7 @@ export const onModAction = async (event: ModAction, context: TriggerContext) => 
     const ts = event.actionedAt?.getTime() ?? now();
     console.debug(`timestamp is ${ts}`);
 
-    // todo is there a scenario where a moderated user is one of the special accounts?
-    const tid = getModeratedThingId(event);
+    const tid = await getModeratedThingId(event, context);
     console.debug(`got moderated thing id ${tid}`);
 
     const ctx = await context.settings.get<boolean>(AppSetting.IncludeContext) ?? false;
@@ -233,13 +237,15 @@ export const onForwardEvents = async (event: ScheduledJobEvent<Nothing>, context
         content += `${member.member}\n`;
     }
 
-    // replace the contents of the queue page each time
-    // it is instantly picked up and queued up by the server
-    // so operating destructively is OK
-    await context.reddit.updateWikiPage({
+    const page = await updateWikiPage({
         subredditName: destination,
         page: WP_OPEN_MOD_EVENTS,
         content
-    });
+    }, context);
+
+    if (!page) {
+        throw new Error(`failed to update the wiki page for ${WP_OPEN_MOD_EVENTS}`);
+    }
+
     console.debug(`forwarded ${members.length} events to https://reddit.com/r/${destination}/mod/wiki/${WP_OPEN_MOD_EVENTS}`);
 };
