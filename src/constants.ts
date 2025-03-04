@@ -39,6 +39,7 @@ export const SPECIAL_ACCOUNT_NAME_TO_ID: Record<string, UserID> = {
     [SpecialAccountName.Redacted]: 't2_spl_red',
     [SpecialAccountName.Deleted]: 't2_spl_del',
     [SpecialAccountName.Unavailable]: 't2_spl_uvl',
+    [SpecialAccountName.ModCodeOfConduct]: 't2_spl_mcc',
 };
 
 export const SPECIAL_ACCOUNT_IDS = Object.values(SPECIAL_ACCOUNT_NAME_TO_ID) as string[];
@@ -50,9 +51,35 @@ export const SPECIAL_ACCOUNT_ID_TO_NAME = {
     [SPECIAL_ACCOUNT_NAME_TO_ID[SpecialAccountName.Redacted]]: SpecialAccountName.Redacted,
     [SPECIAL_ACCOUNT_NAME_TO_ID[SpecialAccountName.Deleted]]: SpecialAccountName.Deleted,
     [SPECIAL_ACCOUNT_NAME_TO_ID[SpecialAccountName.Unavailable]]: SpecialAccountName.Unavailable,
+    [SPECIAL_ACCOUNT_NAME_TO_ID[SpecialAccountName.ModCodeOfConduct]]: SpecialAccountName.ModCodeOfConduct,
+};
+
+export const MOD_ACTION_TARGET_NOUN = {
+    // vInitial
+    [ModActionType.RemoveLink]: 'Author',
+    [ModActionType.SpamLink]: 'Author',
+    [ModActionType.ApproveLink]: 'Author',
+    [ModActionType.RemoveComment]: 'Author',
+    [ModActionType.SpamComment]: 'Author',
+    [ModActionType.ApproveComment]: 'Author',
+    [ModActionType.BanUser]: 'Banned User',
+    [ModActionType.UnbanUser]: 'Unbanned User',
+    [ModActionType.MuteUser]: 'Muted User',
+    [ModActionType.UnmuteUser]: 'Unmuted User',
+    [ModActionType.LockSubmission]: 'Author',
+    [ModActionType.UnlockSubmission]: 'Author',
+
+    // v1.3
+    [ModActionType.AddModerator]: 'New Moderator',
+    [ModActionType.InviteModerator]: 'New Moderator',
+    [ModActionType.AcceptModeratorInvite]: 'New Moderator',
+    [ModActionType.RemoveModerator]: 'Removed Moderator',
+    [ModActionType.AddContributor]: 'Newly Approved User',
+    [ModActionType.RemoveContributor]: 'Previously Approved User',
 };
 
 export const MOD_ACTION_PAST_SIMPLE = {
+    // vInitial
     [ModActionType.RemoveLink]: 'removed a post',
     [ModActionType.SpamLink]: 'marked a post as spam',
     [ModActionType.ApproveLink]: 'approved a post',
@@ -65,9 +92,18 @@ export const MOD_ACTION_PAST_SIMPLE = {
     [ModActionType.UnmuteUser]: 'unmuted a user',
     [ModActionType.LockSubmission]: 'locked a submission',
     [ModActionType.UnlockSubmission]: 'unlocked a submission',
+
+    // v1.3
+    [ModActionType.AddModerator]: 'added a moderator',
+    [ModActionType.InviteModerator]: 'invited a moderator',
+    [ModActionType.AcceptModeratorInvite]: 'accepted an invitation to moderate',
+    [ModActionType.RemoveModerator]: 'removed a moderator',
+    [ModActionType.AddContributor]: 'added an approved submitter',
+    [ModActionType.RemoveContributor]: 'removed an approved submitter',
 };
 
 export const MOD_ACTION_PREPOSITION = {
+    // vInitial
     [ModActionType.RemoveLink]: 'from',
     [ModActionType.SpamLink]: 'in',
     [ModActionType.ApproveLink]: 'in',
@@ -80,6 +116,14 @@ export const MOD_ACTION_PREPOSITION = {
     [ModActionType.UnmuteUser]: 'in',
     [ModActionType.LockSubmission]: 'in',
     [ModActionType.UnlockSubmission]: 'in',
+
+    // v1.3
+    [ModActionType.AddModerator]: 'to',
+    [ModActionType.InviteModerator]: 'to',
+    [ModActionType.AcceptModeratorInvite]: '', // no preposition for accepting, which we need to account for in handlemodaction
+    [ModActionType.RemoveModerator]: 'from',
+    [ModActionType.AddContributor]: 'to',
+    [ModActionType.RemoveContributor]: 'from',
 };
 
 export const SUPPORTED_MOD_ACTIONS = Object.values(ModActionType) as string[];

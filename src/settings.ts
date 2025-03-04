@@ -1,5 +1,6 @@
 import { Devvit, SettingsFormField, SettingsFormFieldValidatorEvent, TriggerContext } from '@devvit/public-api';
 import { getCurrentSubredditName } from './reddit.js';
+import { ModActionType } from './types.js';
 
 export enum AppSetting {
     TargetSubreddit = 'targetSubredit',
@@ -85,20 +86,28 @@ export const appSettings: SettingsFormField[] = [
                 helpText: 'Select the types of moderation actions that will be recorded in the public log',
                 multiSelect: true,
                 options: [
-                    { label: 'Post Removed', value: 'removelink' },
-                    { label: 'Post Marked as Spam', value: 'spamlink' },
-                    { label: 'Post Approved', value: 'approvelink' },
-                    { label: 'Comment Removed', value: 'removecomment' },
-                    { label: 'Comment Marked as Spam', value: 'spamcomment' },
-                    { label: 'Comment Approved', value: 'approveComment' },
-                    { label: 'Submission Locked', value: 'lock' },
-                    { label: 'Submission Unlocked', value: 'unlock' },
-                    { label: 'User Banned', value: 'banuser' },
-                    { label: 'User Unbanned', value: 'unbanuser' },
-                    { label: 'User Muted', value: 'muteuser' },
-                    { label: 'User Unmuted', value: 'unmuteuser' },
+                    { label: 'Post Removed', value: ModActionType.RemoveLink },
+                    { label: 'Post Marked as Spam', value: ModActionType.SpamLink },
+                    { label: 'Post Approved', value: ModActionType.ApproveLink },
+                    { label: 'Comment Removed', value: ModActionType.RemoveComment },
+                    { label: 'Comment Marked as Spam', value: ModActionType.SpamComment},
+                    { label: 'Comment Approved', value: ModActionType.ApproveComment },
+                    { label: 'Submission Locked', value: ModActionType.LockSubmission },
+                    { label: 'Submission Unlocked', value: ModActionType.UnlockSubmission },
+                    { label: 'User Banned', value: ModActionType.BanUser },
+                    { label: 'User Unbanned', value: ModActionType.UnbanUser },
+                    { label: 'User Muted', value: ModActionType.MuteUser },
+                    { label: 'User Unmuted', value: ModActionType.UnmuteUser },
+
+                    // v1.3
+                    { label: 'Moderator Added (by Reddit)', value: ModActionType.AddModerator },
+                    { label: 'Moderator Invited', value: ModActionType.InviteModerator },
+                    { label: 'Moderator Accepted an Invite', value: ModActionType.AcceptModeratorInvite },
+                    { label: 'Moderator Removed', value: ModActionType.RemoveModerator },
+                    { label: 'Approved a User', value: ModActionType.AddContributor },
+                    { label: 'Removed an Approved User', value: ModActionType.RemoveContributor }
                 ],
-                defaultValue: [ 'removelink', 'spamlink', 'removecomment', 'spamcomment', 'banuser', 'muteuser' ],
+                defaultValue: [ ModActionType.RemoveLink, ModActionType.SpamLink, ModActionType.RemoveComment, ModActionType.SpamComment, ModActionType.BanUser, ModActionType.MuteUser ],
                 onValidate: hasAtLeastOneOptionSelected
             },
             {

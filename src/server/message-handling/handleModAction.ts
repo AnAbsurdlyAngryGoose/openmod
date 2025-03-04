@@ -1,7 +1,7 @@
 import { TriggerContext } from "@devvit/public-api";
 import { ModActionMessage, ProtocolEvent, ProtocolMessage } from "../../protocol.js";
 import { CommentID, ModActionType, PostID, UserID, CachedComment, CachedPost, CachedUser, SpecialAccountName } from "../../types.js";
-import { MOD_ACTION_PAST_SIMPLE, MOD_ACTION_PREPOSITION } from "../../constants.js";
+import { MOD_ACTION_PAST_SIMPLE, MOD_ACTION_PREPOSITION, MOD_ACTION_TARGET_NOUN } from "../../constants.js";
 import { addModAction, getCachedComment, getCachedPost, getCachedUser } from "../redis.js";
 import { isCommentID, isPostID } from "../utility.js";
 import { getCurrentSubredditName, getSubredditInfoById, submitPost } from "../../reddit.js";
@@ -11,10 +11,20 @@ const isModEvent = (message: ProtocolMessage): message is ModActionMessage => {
 };
 
 const writeTitle = (action: ModActionType, moderator: string, subreddit: string): string => {
-    const pastSimple = MOD_ACTION_PAST_SIMPLE[action];
-    const preposition = MOD_ACTION_PREPOSITION[action];
+    let title = `u/${moderator}`;
 
-    return `u/${moderator} ${pastSimple} ${preposition} r/${subreddit}`;
+    const pastSimple = MOD_ACTION_PAST_SIMPLE[action];
+    if (pastSimple.trim().length > 0) {
+        title += ` ${pastSimple}`;
+    }
+
+    const preposition = MOD_ACTION_PREPOSITION[action];
+    if (preposition.trim().length > 0) {
+        title += ` ${preposition}`;
+    }
+
+    title += ` r/${subreddit}`;
+    return title;
 };
 
 interface ModActionContext {
@@ -37,7 +47,7 @@ const gatherContext = async (message: ModActionMessage, context: TriggerContext)
         return { user, comment, permalink: comment.permalink };
     }
 
-    if (message.sub.endsWith("user")) {
+    if (message.sub.endsWith("user") || message.sub.includes("moderator") || message.sub.endsWith("contributor")) {
         const user = await getCachedUser(message.tid as UserID, context);
         return { user, permalink: `https://www.reddit.com/user/${user.username}` };
     }
@@ -69,10 +79,11 @@ export const handleModActionMessage = async (message: ProtocolMessage, context: 
     let text = `${title}\n\n`;
 
     const { user, post, comment, permalink } = await gatherContext(message, context);
+    const noun = MOD_ACTION_TARGET_NOUN[message.sub];
     if (user) {
-        text += `Author: ${user.username}${user.isAdmin ? " (admin)" : ""}${user.isApp ? " (app)" : ""}\n\n`;
+        text += `${noun}: ${user.username}${user.isAdmin ? " (admin)" : ""}${user.isApp ? " (app)" : ""}\n\n`;
     } else {
-        text += `Author: ${SpecialAccountName.Unavailable}\n\n`;
+        text += `${noun}: ${SpecialAccountName.Unavailable}\n\n`;
     }
 
     text += `Moderator: ${moderator.username}${moderator.isAdmin ? " (admin)" : ""}${moderator.isApp ? " (app)" : ""}\n\n`;

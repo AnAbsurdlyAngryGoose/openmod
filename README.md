@@ -55,6 +55,18 @@ With special thanks to u/xenc for their help testing the app, and to u/fsv for t
 
 ## Change History
 
+### v1.3.2
+
+- Updated this document.
+
+### v1.3
+
+- Open Mod now supports reproducing logs when:
+  - Adding or removing an approved user, and
+  - Adding, inviting, or removing a moderator, and
+  - Accepting an invite to moderate.
+- Fix a potential issue where actions by u/ModCodeofConduct might not be correctly attributed.
+
 ### v1.2.1
 
 - Miscellaneous fixes.

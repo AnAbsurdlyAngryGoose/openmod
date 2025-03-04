@@ -7,6 +7,7 @@ export type ThingID = CommentID | UserID | PostID | SubredditID;
 export type Nothing = { };
 
 export enum ModActionType {
+    // vInitial
     RemoveLink = 'removelink',
     SpamLink = 'spamlink',
     ApproveLink = 'approvelink',
@@ -19,6 +20,14 @@ export enum ModActionType {
     UnmuteUser = 'unmuteuser',
     LockSubmission = 'lock',
     UnlockSubmission = 'unlock',
+
+    // v1.3
+    AddModerator = 'addmoderator',
+    InviteModerator = 'invitemoderator',
+    AcceptModeratorInvite = 'acceptmoderatorinvite',
+    RemoveModerator = 'removemoderator',
+    AddContributor = 'addcontributor',
+    RemoveContributor = 'removecontributor',
 };
 
 export enum CacheType {
@@ -56,6 +65,7 @@ export enum SpecialAccountName {
     Redacted = '[ redacted ]',        // anti evil operations
     Deleted = '[ deleted ]',          // deleted/suspended
     Unavailable = '[ unavailable ]',  // user not found
+    ModCodeOfConduct = 'ModCodeofConduct'
 };
 
 export type BasicUserData = {

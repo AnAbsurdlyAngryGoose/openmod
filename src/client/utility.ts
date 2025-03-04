@@ -45,7 +45,7 @@ export const getModeratedThingId = async (event: ModAction, context: TriggerCont
         return event.targetPost.id as PostID;
     }
 
-    if (action.endsWith("user")) {
+    if (action.endsWith("user") || action.includes("moderator") || action.endsWith("contributor")) {
         if (!event.targetUser) throw new Error('modaction structure in unusable state: missing targetUser field');
 
         console.debug(`moderated thing is a user`);
