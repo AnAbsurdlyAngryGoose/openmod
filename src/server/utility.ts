@@ -3,11 +3,11 @@ import { CommentID, PostID, SubredditID, ThingID, UserID } from "../types.js";
 
 export const isRecordEmpty = (record: Record<string, unknown>): boolean => {
     for (const property in record) {
-        console.debug(`the given record is not empty, it has the property ${property}`);
+        console.debug('isRecordEmpty', `the given record is not empty, it has the property ${property}`);
         return false;
     }
 
-    console.debug('the given record is empty');
+    console.debug('isRecordEmpty', 'the given record is empty');
     return true;
 };
 
@@ -27,12 +27,12 @@ export const userIsActive = async (user: string, context: TriggerContext): Promi
 
         const result = !!x;
         if (!result) {
-            console.debug(`user ${user} is deleted, shadowbanned, suspended, never existed, or has blocked open mod`);
+            console.debug('userIsActive', `user ${user} is deleted, shadowbanned, suspended, never existed, or has blocked open mod`);
         }
 
         return result;
     } catch {
-        console.debug(`user ${user} is deleted, shadowbanned, suspended, never existed, or has blocked open mod`);
+        console.debug('userIsActive', `user ${user} is deleted, shadowbanned, suspended, never existed, or has blocked open mod`);
         return false;
     }
 };

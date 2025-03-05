@@ -13,25 +13,25 @@ export const handleCommentChangedMessage = async (message: ProtocolMessage, cont
     // this call will fail, and the event will be ignored
     const comment = await getCommentById(tid as CommentID, context);
     if (!comment) {
-        console.debug(`comment ${tid} not found`);
+        console.debug('handleCommentChangedMessage', `comment ${tid} not found`);
         return;
     }
 
     // if the comment is new, but this is not the first time we've seen it, ignore it
     const isDuplicate = await isEventDuplicated(tid, context);
     if (!comment.edited && isDuplicate) {
-        console.debug(`commentsubmit ${comment.id} is a duplicate`);
+        console.debug('handleCommentChangedMessage', `commentsubmit ${comment.id} is a duplicate`);
         return;
     }
 
     const author = await getBasicUserInfoByUsername(comment.authorName, context);
     if (!author) {
-        console.debug(`user ${comment.authorId} not found`);
+        console.debug('handleCommentChangedMessage', `user ${comment.authorId} not found`);
         return;
     }
 
     await cacheComment(comment, context);
     await cacheUser(author, context);
     await trackThing(comment, context);
-    console.debug(`cached ${tid}, its author ${author.id}, and added to it to the tracking set`);
+    console.debug('handleCommentChangedMessage', `cached ${tid}, its author ${author.id}, and added to it to the tracking set`);
 };

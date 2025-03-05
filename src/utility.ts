@@ -8,7 +8,7 @@ export const isEventDuplicated = async (event: string, context: TriggerContext):
     if (!marker) {
         await context.redis.set(key, `${now()}`);
         await context.redis.expire(key, seconds({ days: 14 }));
-        console.debug(`event ${event} is a duplicate, the expiry has been refreshed`);
+        console.debug('isEventDuplicated', `event ${event} is a duplicate, the expiry has been refreshed`);
     }
 
     return !!marker;

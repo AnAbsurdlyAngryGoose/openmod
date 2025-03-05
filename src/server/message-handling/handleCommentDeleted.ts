@@ -10,16 +10,16 @@ export const handleCommentDeletedMessage = async (message: ProtocolMessage, cont
 
     const comment = await getCommentById(tid as CommentID, context);
     if (!comment) {
-        console.debug(`comment ${tid} not found`);
+        console.debug('handleCommentDeletedMessage', `comment ${tid} not found`);
         return;
     }
 
     const isDuplicate = await isEventDuplicated(RK_DELETE_EVENT(tid), context);
     if (isDuplicate) {
-        console.debug(`commentdelete ${tid} is a duplicate`);
+        console.debug('handleCommentDeletedMessage', `commentdelete ${tid} is a duplicate`);
         return;
     }
 
     await delCacheOf(tid, context);
-    console.debug(`forgot comment ${tid}, goodbye ${tid}`);
+    console.debug('handleCommentDeletedMessage', `forgot comment ${tid}, goodbye ${tid}`);
 };

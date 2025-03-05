@@ -13,25 +13,25 @@ export const handlePostChangedMessage = async (message: ProtocolMessage, context
     // this call will fail, and the event will be ignored
     const post = await getPostById(tid as PostID, context);
     if (!post) {
-        console.debug(`post ${tid} not found`);
+        console.debug('handlePostChangedMessage', `post ${tid} not found`);
         return;
     }
 
     // if the comment is new, but this is not the first time we've seen it, ignore it
     const isDuplicate = await isEventDuplicated(tid, context);
     if (!post.edited && isDuplicate) {
-        console.debug(`postsubmit ${post.id} is a duplicate`);
+        console.debug('handlePostChangedMessage', `postsubmit ${post.id} is a duplicate`);
         return;
     }
 
     const author = await getBasicUserInfoByUsername(post.authorName, context);
     if (!author) {
-        console.debug(`user ${post.authorId} not found`);
+        console.debug('handlePostChangedMessage', `user ${post.authorId} not found`);
         return;
     }
 
     await cachePost(post, context);
     await cacheUser(author, context);
     await trackThing(post, context);
-    console.debug(`cached ${tid}, its author ${author.id}, and added to it to the tracking set`);
+    console.debug('handlePostChangedMessage', `cached ${tid}, its author ${author.id}, and added to it to the tracking set`);
 };

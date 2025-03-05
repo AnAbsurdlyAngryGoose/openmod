@@ -52,25 +52,25 @@ const gatherContext = async (message: ModActionMessage, context: TriggerContext)
         return { user, permalink: `https://www.reddit.com/user/${user.username}` };
     }
 
-    throw new Error ("unknown mod action type");
+    throw new Error ("gatherContext, unknown mod action type");
 };
 
 export const handleModActionMessage = async (message: ProtocolMessage, context: TriggerContext): Promise<void> => {
     if (!isModEvent(message)) {
-        console.error(`i find myself in a strange situation, where message is not a modaction: ${JSON.stringify(message)}}`);
+        console.error('handleModActionMessage', `i find myself in a strange situation, where message is not a modaction: ${JSON.stringify(message)}}`);
         return;
     }
 
     const subredditName = await getCurrentSubredditName(context);
     if (!subredditName) {
-        throw new Error("i couldn't work out where i am - is reddit down?");
+        throw new Error("handleModActionMessage, i couldn't work out where i am - is reddit down?");
     }
 
     const moderator = await getCachedUser(message.mod, context);
 
     const subreddit = await getSubredditInfoById(message.sid, context);
     if (!moderator || !subreddit || !subreddit.name) {
-        console.error("failed to read moderator or subreddit info");
+        console.error('handleModActionMessage', "failed to read moderator or subreddit info");
         return;
     }
 
@@ -112,12 +112,12 @@ export const handleModActionMessage = async (message: ProtocolMessage, context: 
 
     const submitted = await submitPost({ subredditName, title, text }, context);
     if (!submitted) {
-        throw new Error("failed to submit post");
+        throw new Error("handleModActionMessage, failed to submit post");
     }
 
     const normalised = submitted.id.replace("t3_", "");
-    console.debug(`submitted extract https://reddit.com/r/${subredditName}/comments/${normalised}`);
+    console.debug('handleModActionMessage', `submitted extract https://reddit.com/r/${subredditName}/comments/${normalised}`);
 
     await addModAction(message.tid, submitted.id, context);
-    console.debug(`added mod action ${message.tid} -> ${submitted.id}`);
+    console.debug('handleModActionMessage', `added mod action ${message.tid} -> ${submitted.id}`);
 };

@@ -10,16 +10,16 @@ export const handlePostDeletedMessage = async (message: ProtocolMessage, context
 
     const post = await getPostById(tid as PostID, context);
     if (!post) {
-        console.debug(`post ${tid} not found`);
+        console.debug('handlePostDeletedMessage', `post ${tid} not found`);
         return;
     }
 
     const isDuplicate = await isEventDuplicated(RK_DELETE_EVENT(tid), context);
     if (isDuplicate) {
-        console.debug(`postdelete ${tid} is a duplicate`);
+        console.debug('handlePostDeletedMessage', `postdelete ${tid} is a duplicate`);
         return;
     }
 
     await delCacheOf(tid, context);
-    console.debug(`forgot post ${tid}, goodbye ${tid}`);
+    console.debug('handlePostDeletedMessage', `forgot post ${tid}, goodbye ${tid}`);
 };
