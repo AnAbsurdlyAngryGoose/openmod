@@ -6,11 +6,22 @@
   "type": "module",
   "dependencies": {
     "@devvit/public-api": "0.11.10",
+    "@devvit/shared-types": "^0.11.10",
     "@js-temporal/polyfill": "^0.4.4",
-    "@types/node": "^22.13.1"
+    "@types/node": "^22.13.1",
+    "fflate": "^0.8.2",
+    "semver": "^7.7.1",
+    "ts-markdown": "^1.2.0"
   },
   "devDependencies": {
+    "@types/semver": "^7.5.8",
     "typescript": "5.3.2",
     "vitest": "^3.0.5"
+  },
+  "scripts": {
+    "test:client": "devvit playtest OpenModRD1",
+    "test:server": "devvit playtest OpenModRD2",
+    "logs:client": "devvit logs OpenModRD1",
+    "logs:server": "devvit logs OpenModRD2"
   }
 }

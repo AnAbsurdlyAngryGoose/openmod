@@ -1,9 +1,9 @@
 import { Devvit } from "@devvit/public-api";
 import { onWikiRevision, onProcessMessageQueue, onCheckSignsOfLife } from "./server/index.js";
-import { onCommentChanged, onForwardEvents, onModAction, onPostChanged, onThingDeleted } from "./client/index.js";
+import { onCommentChanged, onDelayedModAction, onForwardEvents, onModAction, onPostChanged, onThingDeleted } from "./client/index.js";
 import { appSettings } from "./settings.js";
 import { onAppInstallAndUpgrade } from "./installEvents.js";
-import { SJ_FORWARD_EVENTS, SJ_PROCESS_QUEUE, SJ_SIGNS_OF_LIFE } from "./constants.js";
+import { SJ_DELAYED_MOD_ACTION_PROCESSING, SJ_FORWARD_EVENTS, SJ_PROCESS_QUEUE, SJ_SIGNS_OF_LIFE } from "./constants.js";
 
 Devvit.configure({ redditAPI: true, redis: true });
 
@@ -34,6 +34,11 @@ Devvit.addTrigger({
 Devvit.addSchedulerJob({
     name: SJ_FORWARD_EVENTS,
     onRun: onForwardEvents
+});
+
+Devvit.addSchedulerJob({
+    name: SJ_DELAYED_MOD_ACTION_PROCESSING,
+    onRun: onDelayedModAction
 });
 
 /** server */

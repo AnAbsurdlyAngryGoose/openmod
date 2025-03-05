@@ -1,14 +1,19 @@
-import { ModActionType, UserID, SpecialAccountName } from "./types.js";
+import { T2ID } from "@devvit/shared-types/tid.js";
+import { ModActionType, SpecialAccountName } from "./types.js";
 
 /** wiki pages */
 
 export const WP_OPEN_MOD_EVENTS = 'open-mod/v2/events';
+export const WP_OPEN_MOD_SIGNATURE_JWK = 'open-mod/v3/cryptography/ecdsa';
+export const WP_OPEN_MOD_HANDSHAKE_JWK = 'open-mod/v3/cryptography/ecdh';
+export const WP_APP_VERSION = 'open-mod/v3/version';
 
 /** scheduled jobs */
 
 export const SJ_PROCESS_QUEUE = 'process-queue-job';
 export const SJ_FORWARD_EVENTS = 'forward-events-job';
 export const SJ_SIGNS_OF_LIFE = 'signs-of-life-job';
+export const SJ_DELAYED_MOD_ACTION_PROCESSING = 'delayed-mod-action-processing-job';
 
 /** cron expressions */
 
@@ -20,9 +25,11 @@ export const CRON_PROCESS_EVENTS = '* * * * *';
 
 export const RK_QUEUE_LAST_REVISION = 'queue-last-revision';
 export const RK_EVENTS = 'events';
-export const RK_PROCESSING = 'processing';
 export const RK_SIGNS_OF_LIFE = 'signs-of-life';
 export const RK_TRANSMISSION_QUEUE = 'events-for-processing';
+export const RK_SIGNATURE_JWK = 'signature-jwk';
+export const RK_HANDSHAKE_JWK = 'handshake-jwk';
+export const RK_LAST_KNOWN_SETTINGS = 'last-known-settings';
 
 /** batch sizes */
 
@@ -33,7 +40,7 @@ export const BS_SIGNS_OF_LIFE = 50;
 
 export const SPECIAL_ACCOUNT_NAMES = Object.values(SpecialAccountName) as string[];
 
-export const SPECIAL_ACCOUNT_NAME_TO_ID: Record<string, UserID> = {
+export const SPECIAL_ACCOUNT_NAME_TO_ID: Record<string, T2ID> = {
     [SpecialAccountName.Reddit]: 't2_spl_rddt',
     [SpecialAccountName.RedditLegal]: 't2_spl_lgl',
     [SpecialAccountName.AntiEvilOperations]: 't2_spl_aeo',

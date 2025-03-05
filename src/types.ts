@@ -1,8 +1,4 @@
-export type CommentID = `t1_${string}`;
-export type UserID = `t2_${string}`;
-export type PostID = `t3_${string}`;
-export type SubredditID = `t5_${string}`;
-export type ThingID = CommentID | UserID | PostID | SubredditID;
+import { T2ID } from '@devvit/shared-types/tid.js'
 
 export type Nothing = { };
 
@@ -39,13 +35,13 @@ export enum CacheType {
 type Cached<T extends CacheType> = { type: T };
 
 export type CachedComment = Cached<CacheType.Comment> & {
-    author: UserID,
+    author: T2ID,
     body: string,
     permalink: string
 };
 
 export type CachedPost = Cached<CacheType.Post> & {
-    author: UserID,
+    author: T2ID,
     title: string,
     body?: string,
     url: string,
@@ -69,8 +65,19 @@ export enum SpecialAccountName {
 };
 
 export type BasicUserData = {
-    id: UserID,
+    id: T2ID,
     username: string,
     isAdmin: boolean,
     isApp: boolean
+};
+
+export type CachedSubreddit = {
+    name: string
+};
+
+export type ModLogEntry = {
+    type: ModActionType,
+    moderatorName: string,
+    details?: string,
+    description?: string,
 };

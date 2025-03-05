@@ -8,7 +8,7 @@ The application is additionally triggered upon the deletion of a submission. In 
 
 ## Installing Open Mod
 
-To install Open Mod, please add the application to the community from which you would like to reproduce mod logs (the "origin") and the community to which you would like to publish them (the "destination"). Publishing logs to the community from which they originate is **not supported**.
+To install Open Mod, please add the application to the community from which you would like to reproduce mod logs (the "origin") and the community to which you would like to publish them (the "destination").
 
 You must then configure the application in the "origin" community.
 
@@ -20,6 +20,14 @@ Steps:
 - Install the application in r/FancySubredditLogs.
 - In r/FancySubreddit, configure the application by setting "Destination Subreddit" to "FancySubredditLogs" (without quotes).
 - Optionally, in r/FancySubreddit, adjust the remaining settings to my liking.
+
+### Unsupported Scenarios
+
+Publishing logs to the community from which they originate is **not currently supported**.
+
+Publishing to a single subreddit (e.g. r/FancySubredditLogs) from multiple subreddits (e.g. r/FancySub1, r/FancySub2) is **not currently supported**.
+
+If any of the scenarios in this section would be immediately useful to you, please get in touch via my Reddit DMs! Knowing what you need will help me prioritise and plan improvements.
 
 ## Configuration
 
@@ -34,6 +42,8 @@ Open Mod is configurable, and supports the following options.
 - A list of users to exclude from the public extract
 
 By default, Open Mod only creates extracts for bans (but not unbans), mutes (but not unmutes), removing posts or marking them as spam, and removing comments or marking them as spam.
+
+Configuration is synchronised between your paired installations. Changes to the configuration may take up to an hour to be reflected in your public extract.
 
 ## Data Stored
 
@@ -54,6 +64,16 @@ This app is open source and licenced under the [AGPL v3](https://choosealicense.
 With special thanks to u/xenc for their help testing the app, and to u/fsv for their support implementing CDP enforcement (and for inspiring the format of this README).
 
 ## Change History
+
+### v2
+
+- **Open Mod v2 is not compatible with versions 1.3.5 and earlier.**
+- The application now enforces parity between instances.
+- Extracts are now recorded internally for future contextualisation.
+- Messages are now compressed in transit.
+- Extracts can now optionally include the complete mod log.
+- It is now possible to toggle user and subreddit mentions.
+- Settings are now synchronised between installations.
 
 ### v1.3.5
 
