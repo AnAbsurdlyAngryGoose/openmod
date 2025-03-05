@@ -4,7 +4,7 @@
  * and is strictly additive, ensuring backwards compatibility
  */
 
-import { ModActionType, SubredditID, ThingID, UserID } from "./types.js";
+import { ModActionType, Rule, SubredditID, ThingID, UserID } from "./types.js";
 
 /** high level components */
 
@@ -85,12 +85,12 @@ type PostDeleteMessage = MessageV2<ProtocolEvent.PostDelete>;
  * For a mod action, it is the moderated thing id
  * e.g., if the action was removecomment, the target thing id would be the comment id of the removed content
  */
-export type ModActionMessage = MessageV2<ProtocolEvent.ModAction> & {
+export type BaseModActionMessage<T extends ModActionType> = MessageV2<ProtocolEvent.ModAction> & {
     /**
      * The subtype of the message
      * This represents the action taken by the moderator, e.g. "banuser"
      */
-    sub: ModActionType;
+    sub: T;
 
     /**
      * The user id moderator who took the action
@@ -103,6 +103,80 @@ export type ModActionMessage = MessageV2<ProtocolEvent.ModAction> & {
     ctx: boolean;
 };
 
+/** modactions */
+
+// app v1.2
+
+type RemoveLinkMessage = BaseModActionMessage<ModActionType.RemoveLink>;
+type SpamLinkMessage = BaseModActionMessage<ModActionType.SpamLink>;
+type ApproveLinkMessage = BaseModActionMessage<ModActionType.ApproveLink>;
+type RemoveCommentMessage = BaseModActionMessage<ModActionType.RemoveComment>;
+type SpamCommentMessage = BaseModActionMessage<ModActionType.SpamComment>;
+type ApproveCommentMessage = BaseModActionMessage<ModActionType.ApproveComment>;
+type BanUserMessage = BaseModActionMessage<ModActionType.BanUser>;
+type UnbanUserMessage = BaseModActionMessage<ModActionType.UnbanUser>;
+type MuteUserMessage = BaseModActionMessage<ModActionType.MuteUser>;
+type UnmuteUserMessage = BaseModActionMessage<ModActionType.UnmuteUser>;
+type LockSubmissionMessage = BaseModActionMessage<ModActionType.LockSubmission>;
+type UnlockSubmissionMessage = BaseModActionMessage<ModActionType.UnlockSubmission>;
+
+// v1.3
+
+type AddModeratorMessage = BaseModActionMessage<ModActionType.AddModerator>;
+type InviteModeratorMessage = BaseModActionMessage<ModActionType.InviteModerator>;
+type AcceptModeratorInviteMessage = BaseModActionMessage<ModActionType.AcceptModeratorInvite>;
+type RemoveModeratorMessage = BaseModActionMessage<ModActionType.RemoveModerator>;
+type AddContributorMessage = BaseModActionMessage<ModActionType.AddContributor>;
+type RemoveContributorMessage = BaseModActionMessage<ModActionType.RemoveContributor>;
+
+// v1.4
+
+type CreateRuleMessage = MessageV2<ModActionType.CreateRule> & {
+    prio: number;
+    rule: Rule;
+};
+
+type EditRuleMessage = MessageV2<ModActionType.EditRule> & {
+    prio: number;
+    rule: Rule;
+};
+
+type DeleteRuleMessage = MessageV2<ModActionType.DeleteRule> & {
+    prio: number;
+};
+
+type ReorderRulesMessage = MessageV2<ModActionType.ReorderRules> & {
+    /** the new order of the rules */
+    prio: number[];
+};
+
+export type ModActionMessage = RemoveLinkMessage
+                | SpamLinkMessage
+                | ApproveLinkMessage
+                | RemoveCommentMessage
+                | SpamCommentMessage
+                | ApproveCommentMessage
+                | BanUserMessage
+                | UnbanUserMessage
+                | MuteUserMessage
+                | UnmuteUserMessage
+                | LockSubmissionMessage
+                | UnlockSubmissionMessage
+                | AddModeratorMessage
+                | InviteModeratorMessage
+                | AcceptModeratorInviteMessage
+                | RemoveModeratorMessage
+                | AddContributorMessage
+                | RemoveContributorMessage
+                | CreateRuleMessage
+                | EditRuleMessage
+                | DeleteRuleMessage
+                | ReorderRulesMessage;
+
 /** exports */
 
-export type ProtocolMessage = CommentChangedMessage | CommentDeleteMessage | PostChangedMessage | PostDeleteMessage | ModActionMessage;
+export type ProtocolMessage = CommentChangedMessage
+                | CommentDeleteMessage
+                | PostChangedMessage
+                | PostDeleteMessage
+                | ModActionMessage;

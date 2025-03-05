@@ -28,6 +28,12 @@ export enum ModActionType {
     RemoveModerator = 'removemoderator',
     AddContributor = 'addcontributor',
     RemoveContributor = 'removecontributor',
+
+    // v1.4
+    CreateRule = 'createrule',
+    EditRule = 'editrule',
+    ReorderRules = 'reorderrules',
+    DeleteRule = 'deleterule',
 };
 
 export enum CacheType {
@@ -73,4 +79,10 @@ export type BasicUserData = {
     username: string,
     isAdmin: boolean,
     isApp: boolean
+};
+
+export type Rule = {
+    name: string,
+    description: string,
+    reason: string
 };
