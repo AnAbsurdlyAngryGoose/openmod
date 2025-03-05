@@ -1,8 +1,11 @@
-import { ModActionType, UserID, SpecialAccountName } from "./types.js";
+import { T2ID } from "@devvit/shared-types/tid.js";
+import { ModActionType, SpecialAccountName } from "./types.js";
 
 /** wiki pages */
 
 export const WP_OPEN_MOD_EVENTS = 'open-mod/v2/events';
+export const WP_OPEN_MOD_SIGNATURE_JWK = 'open-mod/v3/cryptography/ecdsa';
+export const WP_OPEN_MOD_HANDSHAKE_JWK = 'open-mod/v3/cryptography/ecdh';
 
 /** scheduled jobs */
 
@@ -22,6 +25,8 @@ export const RK_EVENTS = 'events';
 export const RK_PROCESSING = 'processing';
 export const RK_SIGNS_OF_LIFE = 'signs-of-life';
 export const RK_TRANSMISSION_QUEUE = 'events-for-processing';
+export const RK_SIGNATURE_JWK = 'signature-jwk';
+export const RK_HANDSHAKE_JWK = 'handshake-jwk';
 
 /** batch sizes */
 
@@ -32,7 +37,7 @@ export const BS_SIGNS_OF_LIFE = 50;
 
 export const SPECIAL_ACCOUNT_NAMES = Object.values(SpecialAccountName) as string[];
 
-export const SPECIAL_ACCOUNT_NAME_TO_ID: Record<string, UserID> = {
+export const SPECIAL_ACCOUNT_NAME_TO_ID: Record<string, T2ID> = {
     [SpecialAccountName.Reddit]: 't2_spl_rddt',
     [SpecialAccountName.RedditLegal]: 't2_spl_lgl',
     [SpecialAccountName.AntiEvilOperations]: 't2_spl_aeo',
