@@ -34,6 +34,10 @@ export enum ModActionType {
     // EditRule = 'editrule',
     // ReorderRules = 'reorderrules',
     // DeleteRule = 'deleterule',
+
+    // v1.4
+    Sticky = 'sticky',
+    Unsticky = 'unsticky',
 };
 
 export enum CacheType {

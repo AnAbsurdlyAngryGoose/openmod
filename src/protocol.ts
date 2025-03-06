@@ -150,6 +150,10 @@ type RemoveContributorMessage = BaseModActionMessage<ModActionType.RemoveContrib
 //     prio: number[];
 // };
 
+// v1.4
+type StickyMessage = BaseModActionMessage<ModActionType.Sticky>;
+type UnstickyMessage = BaseModActionMessage<ModActionType.Unsticky>;
+
 export type ModActionMessage = RemoveLinkMessage
                 | SpamLinkMessage
                 | ApproveLinkMessage
@@ -171,7 +175,9 @@ export type ModActionMessage = RemoveLinkMessage
                 // | CreateRuleMessage
                 // | EditRuleMessage
                 // | DeleteRuleMessage
-                // | ReorderRulesMessage;
+                // | ReorderRulesMessage
+                | StickyMessage
+                | UnstickyMessage
                 ;
 
 /** exports */
