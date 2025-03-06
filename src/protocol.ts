@@ -4,7 +4,7 @@
  * and is strictly additive, ensuring backwards compatibility
  */
 
-import { ModActionType, Rule, SubredditID, ThingID, UserID } from "./types.js";
+import { ModActionType, SubredditID, ThingID, UserID } from "./types.js";
 
 /** high level components */
 
