@@ -29,11 +29,11 @@ export enum ModActionType {
     AddContributor = 'addcontributor',
     RemoveContributor = 'removecontributor',
 
-    // v1.4
-    CreateRule = 'createrule',
-    EditRule = 'editrule',
-    ReorderRules = 'reorderrules',
-    DeleteRule = 'deleterule',
+    // rules are hard, so we'll save them for a later version
+    // CreateRule = 'createrule',
+    // EditRule = 'editrule',
+    // ReorderRules = 'reorderrules',
+    // DeleteRule = 'deleterule',
 };
 
 export enum CacheType {
@@ -81,8 +81,9 @@ export type BasicUserData = {
     isApp: boolean
 };
 
-export type Rule = {
-    name: string,
-    description: string,
-    reason: string
-};
+// needed for the rule behaviour later
+// export type Rule = {
+//     name: string,
+//     description: string,
+//     reason: string
+// };

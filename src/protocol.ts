@@ -129,26 +129,26 @@ type RemoveModeratorMessage = BaseModActionMessage<ModActionType.RemoveModerator
 type AddContributorMessage = BaseModActionMessage<ModActionType.AddContributor>;
 type RemoveContributorMessage = BaseModActionMessage<ModActionType.RemoveContributor>;
 
-// v1.4
+/** rules are hard, so we'll save these for a later version */
 
-type CreateRuleMessage = MessageV2<ModActionType.CreateRule> & {
-    prio: number;
-    rule: Rule;
-};
+// type CreateRuleMessage = MessageV2<ModActionType.CreateRule> & {
+//     prio: number;
+//     rule: Rule;
+// };
 
-type EditRuleMessage = MessageV2<ModActionType.EditRule> & {
-    prio: number;
-    rule: Rule;
-};
+// type EditRuleMessage = MessageV2<ModActionType.EditRule> & {
+//     prio: number;
+//     rule: Rule;
+// };
 
-type DeleteRuleMessage = MessageV2<ModActionType.DeleteRule> & {
-    prio: number;
-};
+// type DeleteRuleMessage = MessageV2<ModActionType.DeleteRule> & {
+//     prio: number;
+// };
 
-type ReorderRulesMessage = MessageV2<ModActionType.ReorderRules> & {
-    /** the new order of the rules */
-    prio: number[];
-};
+// type ReorderRulesMessage = MessageV2<ModActionType.ReorderRules> & {
+//     /** the new order of the rules */
+//     prio: number[];
+// };
 
 export type ModActionMessage = RemoveLinkMessage
                 | SpamLinkMessage
@@ -168,10 +168,11 @@ export type ModActionMessage = RemoveLinkMessage
                 | RemoveModeratorMessage
                 | AddContributorMessage
                 | RemoveContributorMessage
-                | CreateRuleMessage
-                | EditRuleMessage
-                | DeleteRuleMessage
-                | ReorderRulesMessage;
+                // | CreateRuleMessage
+                // | EditRuleMessage
+                // | DeleteRuleMessage
+                // | ReorderRulesMessage;
+                ;
 
 /** exports */
 
@@ -179,4 +180,5 @@ export type ProtocolMessage = CommentChangedMessage
                 | CommentDeleteMessage
                 | PostChangedMessage
                 | PostDeleteMessage
-                | ModActionMessage;
+                | ModActionMessage
+                ;

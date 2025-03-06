@@ -77,11 +77,11 @@ export const MOD_ACTION_TARGET_NOUN = {
     [ModActionType.AddContributor]: 'Newly Approved User',
     [ModActionType.RemoveContributor]: 'Previously Approved User',
 
-    // v1.4
-    [ModActionType.CreateRule]: 'Editor',
-    [ModActionType.EditRule]: 'Editor',
-    [ModActionType.ReorderRules]: 'Editor',
-    [ModActionType.DeleteRule]: 'Editor',
+    // rules are hard, so we'll save them for a later version
+    // [ModActionType.CreateRule]: 'Editor',
+    // [ModActionType.EditRule]: 'Editor',
+    // [ModActionType.ReorderRules]: 'Editor',
+    // [ModActionType.DeleteRule]: 'Editor',
 };
 
 export const MOD_ACTION_PAST_SIMPLE = {
@@ -107,11 +107,11 @@ export const MOD_ACTION_PAST_SIMPLE = {
     [ModActionType.AddContributor]: 'added an approved submitter',
     [ModActionType.RemoveContributor]: 'removed an approved submitter',
 
-    // v1.4
-    [ModActionType.CreateRule]: 'created a rule',
-    [ModActionType.EditRule]: 'edited a rule',
-    [ModActionType.ReorderRules]: 'reordered rules',
-    [ModActionType.DeleteRule]: 'deleted a rule',
+    // rules are hard, so we'll save them for a later version
+    // [ModActionType.CreateRule]: 'created a rule',
+    // [ModActionType.EditRule]: 'edited a rule',
+    // [ModActionType.ReorderRules]: 'reordered rules',
+    // [ModActionType.DeleteRule]: 'deleted a rule',
 };
 
 export const MOD_ACTION_PREPOSITION = {
@@ -137,11 +137,11 @@ export const MOD_ACTION_PREPOSITION = {
     [ModActionType.AddContributor]: 'to',
     [ModActionType.RemoveContributor]: 'from',
 
-    // v1.4
-    [ModActionType.CreateRule]: 'in',
-    [ModActionType.EditRule]: 'in',
-    [ModActionType.ReorderRules]: 'in',
-    [ModActionType.DeleteRule]: 'from',
+    // rules are hard, so we'll save them for a later version
+    // [ModActionType.CreateRule]: 'in',
+    // [ModActionType.EditRule]: 'in',
+    // [ModActionType.ReorderRules]: 'in',
+    // [ModActionType.DeleteRule]: 'from',
 };
 
 export const SUPPORTED_MOD_ACTIONS = Object.values(ModActionType) as string[];
