@@ -81,7 +81,11 @@ const gatherContext = async (message: ModActionMessage, context: TriggerContext)
 
     const moderator = await getCachedUser(message.mod, context);
     const subreddit = await getCachedSubreddit(message.sid, context);
-    const modLog = await getModerationLog(message.tid, subreddit.name, moderator.username, context); 
+
+    let modLog: ModAction | undefined;
+    if (message.mid) {
+         modLog = await getModerationLog(message.mid, subreddit.name, moderator.username, context);
+    }
 
     // lock, unlock, removelink, spamlink, approvelink
     if ((message.sub.endsWith("lock") && isPostID(message.tid)) || message.sub.endsWith("link")) {

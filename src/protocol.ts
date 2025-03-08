@@ -101,6 +101,11 @@ export type BaseModActionMessage<T extends ModActionType> = MessageV2<ProtocolEv
      * Whether context should be included
      */
     ctx: boolean;
+
+    /**
+     * The unique identifier for this mod action
+     */
+    mid?: `ModAction_${string}`;
 };
 
 /** modactions */
