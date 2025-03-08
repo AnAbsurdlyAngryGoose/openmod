@@ -1,58 +1,115 @@
-import { TriggerContext } from "@devvit/public-api";
+import { ModAction, TriggerContext } from "@devvit/public-api";
 import { ModActionMessage, ProtocolEvent, ProtocolMessage } from "../../protocol.js";
-import { CommentID, ModActionType, PostID, UserID, CachedComment, CachedPost, CachedUser, SpecialAccountName } from "../../types.js";
+import { CommentID, ModActionType, PostID, UserID, CachedComment, CachedPost, CachedUser, SpecialAccountName, CachedSubreddit } from "../../types.js";
 import { MOD_ACTION_PAST_SIMPLE, MOD_ACTION_PREPOSITION, MOD_ACTION_TARGET_NOUN } from "../../constants.js";
-import { addModAction, getCachedComment, getCachedPost, getCachedUser } from "../redis.js";
+import { addExtract, addModAction, getCachedComment, getCachedPost, getCachedSubreddit, getCachedUser } from "../redis.js";
 import { isCommentID, isPostID } from "../utility.js";
 import { getCurrentSubredditName, getSubredditInfoById, submitPost } from "../../reddit.js";
+
+type ModActionContext = {
+    action: ModActionType;
+    moderator: CachedUser;
+    subreddit: CachedSubreddit;
+    targetUser?: CachedUser;
+    targetPost?: CachedPost;
+    targetComment?: CachedComment;
+    modLog?: ModAction
+};
 
 const isModEvent = (message: ProtocolMessage): message is ModActionMessage => {
     return message.type === ProtocolEvent.ModAction;
 };
 
-const writeTitle = (action: ModActionType, moderator: string, subreddit: string): string => {
-    let title = `u/${moderator}`;
+const writeTitle = (context: ModActionContext): string => {
+    let title = `u/${context.moderator.username}`;
 
-    const pastSimple = MOD_ACTION_PAST_SIMPLE[action];
+    const pastSimple = MOD_ACTION_PAST_SIMPLE[context.action];
     if (pastSimple.trim().length > 0) {
         title += ` ${pastSimple}`;
     }
 
-    const preposition = MOD_ACTION_PREPOSITION[action];
+    const preposition = MOD_ACTION_PREPOSITION[context.action];
     if (preposition.trim().length > 0) {
         title += ` ${preposition}`;
     }
 
-    title += ` r/${subreddit}`;
+    title += ` r/${context.subreddit.name}`;
     return title;
 };
 
-interface ModActionContext {
-    user: CachedUser;
-    comment?: CachedComment;
-    post?: CachedPost;
-    permalink: string;
+const getModerationLog = async (id: string, subredditName: string, moderator: string, context: TriggerContext): Promise<ModAction | undefined> => {
+    const moderationLog = await context.reddit.getModerationLog({
+        subredditName,
+        moderatorUsernames: [moderator],
+        limit: 50,
+    }).all();
+
+    const modAction = moderationLog.find((log) => log.id === id);
+    if (!modAction) {
+        console.error(`getModerationLog, failed to find mod action ${id}`);
+    }
+
+    return modAction;
+};
+
+const getPermalink = (context: ModActionContext): string => {
+    if (context.targetComment) {
+        return context.targetComment.permalink;
+    }
+
+    if (context.targetPost) {
+        return context.targetPost.permalink;
+    }
+
+    // if the action involved moderator changes, link to the moderator page
+    if (context.action.includes("moderator")) {
+        return `https://reddit.com/mod/${context.subreddit.name}/moderators`;
+    }
+
+    // for all other scenarios, expect that this is a user-related action e.g. a ban
+    if (context.targetUser) {
+        return `https://reddit.com/user/${context.targetUser.username}`;
+    }
+
+    return "[ unavailable ]";
 };
 
 const gatherContext = async (message: ModActionMessage, context: TriggerContext): Promise<ModActionContext> => {
+    let targetUser: CachedUser | undefined;
+    let targetPost: CachedPost | undefined;
+    let targetComment: CachedComment | undefined;
+
+    const moderator = await getCachedUser(message.mod, context);
+    const subreddit = await getCachedSubreddit(message.sid, context);
+    const modLog = await getModerationLog(message.tid, subreddit.name, moderator.username, context); 
+
+    // lock, unlock, removelink, spamlink, approvelink
     if ((message.sub.endsWith("lock") && isPostID(message.tid)) || message.sub.endsWith("link")) {
-        const post = await getCachedPost(message.tid as PostID, context);
-        const user = await getCachedUser(post.author, context);
-        return { user, post, permalink: post.permalink };
+        targetPost = await getCachedPost(message.tid as PostID, context);
+        targetUser = await getCachedUser(targetPost.author, context);
     }
 
+    // lock, unlock, removecomment, spamcomment, approvecomment
     if ((message.sub.endsWith("lock") && isCommentID(message.tid)) || message.sub.endsWith("comment")) {
-        const comment = await getCachedComment(message.tid as CommentID, context);
-        const user = await getCachedUser(comment.author, context);
-        return { user, comment, permalink: comment.permalink };
+        targetComment = await getCachedComment(message.tid as CommentID, context);
+        targetUser = await getCachedUser(targetComment.author, context);
     }
 
+    // banuser, unbanuser, muteuser, unmuteuser, addmoderator, invitemoderator,
+    // acceptmoderatorinvite, removemoderator, addcontributor, removecontributor
     if (message.sub.endsWith("user") || message.sub.includes("moderator") || message.sub.endsWith("contributor")) {
-        const user = await getCachedUser(message.tid as UserID, context);
-        return { user, permalink: `https://www.reddit.com/user/${user.username}` };
+        targetUser = await getCachedUser(message.tid as UserID, context);
     }
 
-    throw new Error ("gatherContext, unknown mod action type");
+    return {
+        action: message.sub,
+        moderator,
+        subreddit,
+        targetUser,
+        targetPost,
+        targetComment,
+        modLog
+    };
 };
 
 export const handleModActionMessage = async (message: ProtocolMessage, context: TriggerContext): Promise<void> => {
@@ -66,40 +123,31 @@ export const handleModActionMessage = async (message: ProtocolMessage, context: 
         throw new Error("handleModActionMessage, i couldn't work out where i am - is reddit down?");
     }
 
-    const moderator = await getCachedUser(message.mod, context);
-
-    const subreddit = await getSubredditInfoById(message.sid, context);
-    if (!moderator || !subreddit || !subreddit.name) {
-        console.error('handleModActionMessage', "failed to read moderator or subreddit info");
-        return;
-    }
-
-    const title = writeTitle(message.sub, moderator.username, subreddit.name);
-
+    const ctx = await gatherContext(message, context);
+    const title = writeTitle(ctx);
     let text = `${title}\n\n`;
 
-    const { user, post, comment, permalink } = await gatherContext(message, context);
-    const noun = MOD_ACTION_TARGET_NOUN[message.sub];
-    if (user) {
-        text += `${noun}: ${user.username}${user.isAdmin ? " (admin)" : ""}${user.isApp ? " (app)" : ""}\n\n`;
+    const noun = MOD_ACTION_TARGET_NOUN[ctx.action];
+    if (ctx.targetUser) {
+        text += `${noun}: ${ctx.targetUser.username}${ctx.targetUser.isAdmin ? " (admin)" : ""}${ctx.targetUser.isApp ? " (app)" : ""}\n\n`;
     } else {
         text += `${noun}: ${SpecialAccountName.Unavailable}\n\n`;
     }
 
-    text += `Moderator: ${moderator.username}${moderator.isAdmin ? " (admin)" : ""}${moderator.isApp ? " (app)" : ""}\n\n`;
+    text += `Moderator: ${ctx.moderator.username}${ctx.moderator.isAdmin ? " (admin)" : ""}${ctx.moderator.isApp ? " (app)" : ""}\n\n`;
     text += `Action: ${message.sub}\n\n`;
 
-    if (message.ctx && (post || comment)) {
+    if (message.ctx && (ctx.targetPost || ctx.targetComment)) {
         text += `Context:\n\n`;
         text += '```\n';
 
-        if (post) {
-            text += `Title: ${post.title}`;
-            if (post.body) {
-                text += `\n\n${post.body}`;
+        if (ctx.targetPost) {
+            text += `Title: ${ctx.targetPost.title}`;
+            if (ctx.targetPost.body) {
+                text += `\n\n${ctx.targetPost.body}`;
             }
-        } else if (comment) {
-            text += comment.body;
+        } else if (ctx.targetComment) {
+            text += ctx.targetComment.body;
         } else {
             text += `Not applicable.`;
         }
@@ -107,6 +155,7 @@ export const handleModActionMessage = async (message: ProtocolMessage, context: 
         text += '\n```\n\n';
     }
 
+    const permalink = getPermalink(ctx);
     text += `Permalink:\n\n${permalink.startsWith("https") ? "" : "https://reddit.com"}${permalink}\n\n\n\n`;
     text += `^(This content was automatically generated, and correct as of the time of posting. Changes to the content, such as edits or deletions, may not be reflected here.)`;
 
@@ -119,5 +168,8 @@ export const handleModActionMessage = async (message: ProtocolMessage, context: 
     console.debug('handleModActionMessage', `submitted extract https://reddit.com/r/${subredditName}/comments/${normalised}`);
 
     await addModAction(message.tid, submitted.id, context);
-    console.debug('handleModActionMessage', `added mod action ${message.tid} -> ${submitted.id}`);
+    console.debug('handleModActionMessage', `recorded mod action ${message.tid} -> ${submitted.id}`);
+
+    await addExtract(submitted.id, message, context);
+    console.debug('handleModActionMessage', `recorded extract ${submitted.id} -> ${JSON.stringify(message)}`);
 };

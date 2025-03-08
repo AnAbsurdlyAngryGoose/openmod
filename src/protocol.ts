@@ -150,7 +150,7 @@ type RemoveContributorMessage = BaseModActionMessage<ModActionType.RemoveContrib
 //     prio: number[];
 // };
 
-// v1.4
+// sticky events current fire twice, so can't support them just yet
 // type StickyMessage = BaseModActionMessage<ModActionType.Sticky>;
 // type UnstickyMessage = BaseModActionMessage<ModActionType.Unsticky>;
 
@@ -179,8 +179,6 @@ export type ModActionMessage = RemoveLinkMessage
                 // | StickyMessage
                 // | UnstickyMessage
                 ;
-
-/** exports */
 
 export type ProtocolMessage = CommentChangedMessage
                 | CommentDeleteMessage

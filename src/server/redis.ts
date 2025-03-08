@@ -1,9 +1,10 @@
-import { TriggerContext, Comment, Post, User } from "@devvit/public-api";
-import { CommentID, PostID, ThingID, UserID, CacheType, CachedComment, CachedPost, CachedUser, SpecialAccountName, BasicUserData } from "../types.js";
+import { TriggerContext, Comment, Post, User, SubredditInfo } from "@devvit/public-api";
+import { CommentID, PostID, ThingID, UserID, CacheType, CachedComment, CachedPost, CachedUser, SpecialAccountName, BasicUserData, SubredditID, CachedSubreddit } from "../types.js";
 import { now, seconds } from "../temporal.js";
 import { RK_SIGNS_OF_LIFE, SPECIAL_ACCOUNT_NAME_TO_ID } from "../constants.js";
 import { isRecordEmpty } from "./utility.js";
-import { getBasicUserInfoById, getCommentById, getPostById } from "../reddit.js";
+import { getBasicUserInfoById, getCommentById, getPostById, getSubredditInfoById } from "../reddit.js";
+import { ModActionMessage } from "../protocol.js";
 
 const RK_CACHED_THING = (thing: ThingID): string => {
     return `cache:${thing}`;
@@ -15,6 +16,12 @@ const RK_USER = (thing: UserID): string => {
 
 const RK_MOD_ACTION = (thing: ThingID): string => {
     return `mod-actions:${thing}`;
+};
+
+// the message associated with an extract submission
+// stored so we can later recreate it if necessary
+const RK_PROTOCOL_MESSAGE = (thing: ThingID): string => {
+    return `protocol-msg:${thing}`;
 };
 
 export const RK_DELETE_EVENT = (thing: ThingID): string => {
@@ -157,7 +164,67 @@ export const delTrackingSet = async (userid: UserID, context: TriggerContext) =>
     console.debug('delTrackingSet', `deleted tracking set ${userid}`);
 };
 
-export const addModAction = async(thingid: ThingID, linkid: PostID, context: TriggerContext) => {
+export const addModAction = async (thingid: ThingID, linkid: PostID, context: TriggerContext) => {
     await context.redis.zAdd(RK_MOD_ACTION(thingid), { member: linkid, score: now() });
     console.debug('addModAction', `added extract ${linkid} to ${thingid}'s record`);
+};
+
+export const addExtract = async (linkid: PostID, message: ModActionMessage, context: TriggerContext) => {
+    await context.redis.hSet(RK_PROTOCOL_MESSAGE(linkid), {
+        ...message,
+        v: `${message.v}`,
+        ts: `${message.ts}`,
+        ctx: `${message.ctx}`,
+    });
+
+    console.debug('addExtract', `added extract ${linkid}`);
+};
+
+export const getExtract = async (linkid: PostID, context: TriggerContext): Promise<ModActionMessage | undefined> => {
+    const hashed = await context.redis.hGetAll(RK_PROTOCOL_MESSAGE(linkid));
+    if (isRecordEmpty(hashed)) {
+        console.error('getExtract', `extract ${linkid} not found`);
+        return;
+    }
+
+    return <ModActionMessage>{
+        ...hashed,
+        v: 2,
+        ts: parseInt(hashed.ts),
+        ctx: hashed.ctx === "true"
+    };
+};
+
+export const cacheSubreddit = async (subreddit: SubredditInfo, context: TriggerContext) => {
+    const data: CachedSubreddit = {
+        name: subreddit.name ?? '[ unavailable ]'
+    };
+
+    return await internalCacheSubreddit(subreddit.id!, data, context);
+};
+
+const internalCacheSubreddit = async (id: SubredditID, subreddit: CachedSubreddit, context: TriggerContext) => {
+    await context.redis.hSet(RK_CACHED_THING(id), subreddit);
+    await context.redis.expire(RK_CACHED_THING(id), seconds({ days: 28 }));
+    console.debug('internalCacheSubreddit', `refreshed cached subreddit ${id} and set it to expire in 28 days`);
+    return subreddit;
+};
+
+export const getCachedSubreddit = async (subredditid: SubredditID, context: TriggerContext): Promise<CachedSubreddit> => {
+    const data = await context.redis.hGetAll(RK_CACHED_THING(subredditid));
+    if (!isRecordEmpty(data)) {
+        await context.redis.expire(RK_CACHED_THING(subredditid), seconds({ days: 28 }));
+
+        console.debug('getCachedSubreddit', `found cached subreddit ${subredditid} and refreshed its expiry`);
+        return data as CachedSubreddit;
+    }
+
+    const subreddit = await getSubredditInfoById(subredditid, context);
+    if (!subreddit) {
+        return await internalCacheSubreddit(subredditid, {
+            name: '[ unavailable ]'
+        }, context);
+    }
+
+    return await cacheSubreddit(subreddit, context);
 };

@@ -91,3 +91,7 @@ export type BasicUserData = {
 //     description: string,
 //     reason: string
 // };
+
+export type CachedSubreddit = {
+    name: string
+};
