@@ -4,7 +4,7 @@ import { CommentID, ModActionType, PostID, UserID, CachedComment, CachedPost, Ca
 import { MOD_ACTION_PAST_SIMPLE, MOD_ACTION_PREPOSITION, MOD_ACTION_TARGET_NOUN } from "../../constants.js";
 import { addExtract, addModAction, getCachedComment, getCachedPost, getCachedSubreddit, getCachedUser } from "../redis.js";
 import { isCommentID, isPostID } from "../utility.js";
-import { getCurrentSubredditName, getSubredditInfoById, submitPost } from "../../reddit.js";
+import { getCurrentSubredditName, submitPost } from "../../reddit.js";
 
 type ModActionContext = {
     action: ModActionType;
