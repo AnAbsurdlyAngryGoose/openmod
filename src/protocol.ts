@@ -151,8 +151,8 @@ type RemoveContributorMessage = BaseModActionMessage<ModActionType.RemoveContrib
 // };
 
 // v1.4
-type StickyMessage = BaseModActionMessage<ModActionType.Sticky>;
-type UnstickyMessage = BaseModActionMessage<ModActionType.Unsticky>;
+// type StickyMessage = BaseModActionMessage<ModActionType.Sticky>;
+// type UnstickyMessage = BaseModActionMessage<ModActionType.Unsticky>;
 
 export type ModActionMessage = RemoveLinkMessage
                 | SpamLinkMessage
@@ -176,8 +176,8 @@ export type ModActionMessage = RemoveLinkMessage
                 // | EditRuleMessage
                 // | DeleteRuleMessage
                 // | ReorderRulesMessage
-                | StickyMessage
-                | UnstickyMessage
+                // | StickyMessage
+                // | UnstickyMessage
                 ;
 
 /** exports */

@@ -83,9 +83,9 @@ export const MOD_ACTION_TARGET_NOUN = {
     // [ModActionType.ReorderRules]: 'Editor',
     // [ModActionType.DeleteRule]: 'Editor',
 
-    // v1.4
-    [ModActionType.Sticky]: 'Author',
-    [ModActionType.Unsticky]: 'Author',
+    // future version
+    // [ModActionType.Sticky]: 'Author',
+    // [ModActionType.Unsticky]: 'Author',
 };
 
 export const MOD_ACTION_PAST_SIMPLE = {
@@ -117,9 +117,9 @@ export const MOD_ACTION_PAST_SIMPLE = {
     // [ModActionType.ReorderRules]: 'reordered rules',
     // [ModActionType.DeleteRule]: 'deleted a rule',
 
-    // v1.4
-    [ModActionType.Sticky]: 'stickied a submission',
-    [ModActionType.Unsticky]: 'unstickied a submission',
+    // future version
+    // [ModActionType.Sticky]: 'stickied a submission',
+    // [ModActionType.Unsticky]: 'unstickied a submission',
 };
 
 export const MOD_ACTION_PREPOSITION = {
@@ -151,9 +151,9 @@ export const MOD_ACTION_PREPOSITION = {
     // [ModActionType.ReorderRules]: 'in',
     // [ModActionType.DeleteRule]: 'from',
 
-    // v1.4
-    [ModActionType.Sticky]: 'in',
-    [ModActionType.Unsticky]: 'from',
+    // future version
+    // [ModActionType.Sticky]: 'in',
+    // [ModActionType.Unsticky]: 'from',
 };
 
 export const SUPPORTED_MOD_ACTIONS = Object.values(ModActionType) as string[];
