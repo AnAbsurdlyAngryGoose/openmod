@@ -143,15 +143,15 @@ export const onModAction = async (event: ModAction, context: TriggerContext) => 
         return;
     }
 
-    const admins = await context.settings.get<boolean>(AppSetting.RecordAdminActions);
+    const admins = await context.settings.get<boolean>(AppSetting.RecordAdminActions) ?? true;
     const moderator = await getBasicUserInfoByUsername(event.moderator.name, context);
-    if (admins && moderator && moderator.isAdmin) {
+    if (!admins && moderator && moderator.isAdmin) {
         console.debug(`modaction ${event.action} by ${event.moderator.id} is excluded`);
         return;
     }
 
-    const automod = await context.settings.get<boolean>(AppSetting.RecordAutoModeratorActions);
-    if (automod && event.moderator.name === 'AutoModerator') {
+    const automod = await context.settings.get<boolean>(AppSetting.RecordAutoModeratorActions) ?? false;
+    if (!automod && event.moderator.name === 'AutoModerator') {
         console.debug(`modaction ${event.action} by ${event.moderator.id} is excluded`);
         return;
     }

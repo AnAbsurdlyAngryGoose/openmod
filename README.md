@@ -55,6 +55,10 @@ With special thanks to u/xenc for their help testing the app, and to u/fsv for t
 
 ## Change History
 
+### v1.3.4
+
+- Fix an issue where admin and automoderator actions may be reported when they shouldn't.
+
 ### v1.3.2
 
 - Updated this document.
