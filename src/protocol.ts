@@ -103,9 +103,9 @@ export type BaseModActionMessage<T extends ModActionType> = MessageV2<ProtocolEv
     ctx: boolean;
 
     /**
-     * The unique identifier for this mod action
+     * A guid identifying the modaction
      */
-    mid?: `ModAction_${string}`;
+    mai?: string;
 };
 
 /** modactions */

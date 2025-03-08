@@ -44,7 +44,8 @@ const getModerationLog = async (id: string, subredditName: string, moderator: st
         limit: 50,
     }).all();
 
-    const modAction = moderationLog.find((log) => log.id === id);
+    const mai = `ModAction_${id}`;
+    const modAction = moderationLog.find((log) => log.id === mai);
     if (!modAction) {
         console.error(`getModerationLog, failed to find mod action ${id}`);
     }
@@ -83,8 +84,8 @@ const gatherContext = async (message: ModActionMessage, context: TriggerContext)
     const subreddit = await getCachedSubreddit(message.sid, context);
 
     let modLog: ModAction | undefined;
-    if (message.mid) {
-         modLog = await getModerationLog(message.mid, subreddit.name, moderator.username, context);
+    if (message.mai) {
+         modLog = await getModerationLog(message.mai, subreddit.name, moderator.username, context);
     }
 
     // lock, unlock, removelink, spamlink, approvelink

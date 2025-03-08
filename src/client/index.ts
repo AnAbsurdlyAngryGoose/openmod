@@ -131,10 +131,10 @@ export const onModAction = async (event: ModAction, context: TriggerContext) => 
         return;
     }
 
-    const identifier = await sha256(event);
-    const duplicated = await isEventDuplicated(identifier, context);
+    let id = await sha256(event);
+    const duplicated = await isEventDuplicated(id, context);
     if (duplicated) {
-        console.debug('onModAction', `modaction ${identifier} is a duplicate`);
+        console.debug('onModAction', `modaction ${id} is a duplicate`);
         return;
     }
 
@@ -195,16 +195,23 @@ export const onModAction = async (event: ModAction, context: TriggerContext) => 
     const tid = await getModeratedThingId(event, context);
     console.debug('onModAction', `got moderated thing id ${tid}`);
 
+    // forward-looking support for modaction id
+    let mai: string | undefined;
+    if ('id' in event) {
+        mai = (event.id as string).replace("ModAction_", "");
+    }
+
     const ctx = await context.settings.get<boolean>(AppSetting.IncludeContext) ?? false;
     const message: ProtocolMessage = {
-        type: ProtocolEvent.ModAction,
-        v: 2,
-        tid,
-        sid: event.subreddit.id as SubredditID,
-        ts,
-        sub: event.action as ModActionType,
-        mod: moderator.id,
-        ctx
+        type: ProtocolEvent.ModAction,          // message type, alway "modAction"
+        v: 2,                                   // protocol version, always 2
+        tid,                                    // tX of moderated thing
+        sid: event.subreddit.id as SubredditID, // t5 of subreddit
+        ts,                                     // timestamp of the event in ms since epoch
+        sub: event.action as ModActionType,     // type of mod action taken
+        mod: moderator.id,                      // t2 of the actor
+        ctx,                                    // true if context should be recorded
+        mai                                     // guid of the mod action
     };
 
     await context.redis.zAdd(RK_TRANSMISSION_QUEUE, {
