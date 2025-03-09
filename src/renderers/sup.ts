@@ -10,12 +10,6 @@ export interface SuperscriptEntry extends MarkdownEntry, RichTextEntry {
    * The superscript contents and identifying property for the renderer.
    */
   sup: RichTextEntry;
-
-  /**
-   * Option to render the superscript indicators as HTML.
-   * Default: false
-   */
-  html?: boolean;
 }
 
 /**
@@ -30,9 +24,8 @@ export const supRenderer: MarkdownRenderer = (
   options: RenderOptions
 ) => {
   if ('sup' in entry) {
-    let useSuperscriptHtml = entry.html ?? options.useSuperscriptHtml ?? false;
-    let superscriptOpen = useSuperscriptHtml ? '<sup>' : '^';
-    let superscriptClose = useSuperscriptHtml ? '</sup>' : '^';
+    let superscriptOpen = '^(';
+    let superscriptClose = ')';
     return `${superscriptOpen}${getMarkdownString(
       entry.sup,
       options

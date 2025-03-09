@@ -55,12 +55,6 @@ export interface RenderOptions {
   useSubscriptHtml?: boolean;
 
   /**
-   * Option to render superscript indicators as HTML.
-   * Default: false
-   */
-  useSuperscriptHtml?: boolean;
-
-  /**
    * Option to render description lists as HTML.
    * Default: false
    */
