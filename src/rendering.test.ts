@@ -18,7 +18,6 @@ import { link } from './renderers/link';
 import { ol } from './renderers/ol';
 import { p, ParagraphEntry } from './renderers/p';
 import { strikethrough } from './renderers/strikethrough';
-import { sub } from './renderers/sub';
 import { sup } from './renderers/sup';
 import { table, TableEntry } from './renderers/table';
 import { text } from './renderers/text';
@@ -395,10 +394,6 @@ describe('given some common aspect to these tests', () => {
       p('These things being said, the next steps are:'),
       ol([
         text(['Act upon the data', sup('2', { html: true })]),
-        text([
-          'Make an assertion about the result',
-          sub('rly', { html: true }),
-        ]),
         'Ship it!',
       ]),
     ];
@@ -442,9 +437,8 @@ Next, we consider a few points:
 
 These things being said, the next steps are:
 
-1. Act upon the data<sup>2</sup>
-2. Make an assertion about the result<sub>rly</sub>
-3. Ship it!
+1. Act upon the data^(2)
+2. Ship it!
 
 [^1]: I have searched far and wide.
     

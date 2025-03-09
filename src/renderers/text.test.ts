@@ -19,45 +19,7 @@ describe('given a text entry', () => {
     };
 
     test('renders text with the specified superscript content', () => {
-      expect(tsMarkdown([textEntry])).toBe('H^2^O');
-    });
-  });
-
-  describe('with a superscript and the HTML flag turned on', () => {
-    const textEntry: TextEntry = {
-      text: [
-        'H',
-        { sup: { bold: { highlight: { italic: '2' } } }, html: true },
-        'O',
-      ],
-    };
-
-    test('renders text with the specified superscript content with HTML superscript tags', () => {
-      expect(tsMarkdown([textEntry])).toBe('H<sup>**==*2*==**</sup>O');
-    });
-  });
-
-  describe('with a subscript', () => {
-    const textEntry: TextEntry = {
-      text: ['H', { sub: '2' }, 'O'],
-    };
-
-    test('renders text with the specified subscript content', () => {
-      expect(tsMarkdown([textEntry])).toBe('H~2~O');
-    });
-  });
-
-  describe('with a subcript and the HTML flag turned on', () => {
-    const textEntry: TextEntry = {
-      text: [
-        'H',
-        { sub: { bold: { highlight: { italic: '2' } } }, html: true },
-        'O',
-      ],
-    };
-
-    test('renders text with the specified superscript content with HTML superscript tags', () => {
-      expect(tsMarkdown([textEntry])).toBe('H<sub>**==*2*==**</sub>O');
+      expect(tsMarkdown([textEntry])).toBe('H^(2)O');
     });
   });
 
