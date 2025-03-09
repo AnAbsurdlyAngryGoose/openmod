@@ -1,5 +1,10 @@
 import { ModActionType, UserID, SpecialAccountName } from "./types.js";
 
+/** strings */
+
+export const STR_NEW_PARAGRAPH = '\n\n';
+export const STR_HORIZONTAL_RULE = '---';
+
 /** wiki pages */
 
 export const WP_OPEN_MOD_EVENTS = 'open-mod/v2/events';
