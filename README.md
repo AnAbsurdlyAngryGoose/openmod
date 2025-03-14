@@ -65,8 +65,12 @@ With special thanks to u/xenc for their help testing the app, and to u/fsv for t
 
 ### v1.4
 
-- Open Mod now supports reproducing logs when:
-  - A rule is added, edited, or deleted.
+- Preliminary support for an upcoming security feature.
+- Preliminary support for an upcoming platform feature.
+- The current app version is now written to the subreddit wiki during install/upgrade.
+- Extracts are now recorded internally for future contextualisation.
+- Refactored extract generation code.
+- Actions by AutoModerator now include the reason.
 
 ### v1.3.4
 
