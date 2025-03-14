@@ -6,6 +6,7 @@ import { ModActionType, SpecialAccountName } from "./types.js";
 export const WP_OPEN_MOD_EVENTS = 'open-mod/v2/events';
 export const WP_OPEN_MOD_SIGNATURE_JWK = 'open-mod/v3/cryptography/ecdsa';
 export const WP_OPEN_MOD_HANDSHAKE_JWK = 'open-mod/v3/cryptography/ecdh';
+export const WP_APP_VERSION = 'open-mod/v3/version';
 
 /** scheduled jobs */
 

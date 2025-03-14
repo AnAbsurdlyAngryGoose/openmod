@@ -1,6 +1,6 @@
 import { AppUpgrade, AppInstall } from "@devvit/protos";
 import { TriggerContext } from "@devvit/public-api";
-import { CRON_FORWARD_EVENTS, SJ_FORWARD_EVENTS, SJ_SIGNS_OF_LIFE, CRON_SIGNS_OF_LIFE, RK_PROCESSING, RK_SIGNATURE_JWK, WP_OPEN_MOD_SIGNATURE_JWK, RK_HANDSHAKE_JWK, WP_OPEN_MOD_HANDSHAKE_JWK } from "./constants.js";
+import { CRON_FORWARD_EVENTS, SJ_FORWARD_EVENTS, SJ_SIGNS_OF_LIFE, CRON_SIGNS_OF_LIFE, RK_PROCESSING, RK_SIGNATURE_JWK, WP_OPEN_MOD_SIGNATURE_JWK, RK_HANDSHAKE_JWK, WP_OPEN_MOD_HANDSHAKE_JWK, WP_APP_VERSION } from "./constants.js";
 
 const restartJobs = async (context: TriggerContext) => {
     const scheduledJobs = await context.scheduler.listJobs();
@@ -68,6 +68,15 @@ const checkAndRefreshSignatureKeys = async (context: TriggerContext) => {
     console.debug('checkAndRefreshSignatureKeys', `refreshed public key at ${WP_OPEN_MOD_SIGNATURE_JWK}`);
 };
 
+const writeVersionToWiki = async (context: TriggerContext) => {
+    await context.reddit.updateWikiPage({
+        subredditName: await context.reddit.getCurrentSubredditName(),
+        page: WP_APP_VERSION,
+        content: context.appVersion
+    });
+    console.debug('writeVersionToWiki', `wrote app version (${context.appVersion}) to ${WP_APP_VERSION}`);
+};
+
 export const onAppInstallAndUpgrade = async (_: AppInstall | AppUpgrade, context: TriggerContext) => {
     await restartJobs(context);
     console.debug('onAppInstallAndUpgrade', 'restarted jobs');
@@ -80,4 +89,7 @@ export const onAppInstallAndUpgrade = async (_: AppInstall | AppUpgrade, context
 
     await checkAndRefreshSignatureKeys(context);
     console.debug('onAppInstallAndUpgrade', 'checked and refreshed signature keys');
+
+    await writeVersionToWiki(context);
+    console.debug('onAppInstallAndUpgrade', 'wrote version to wiki');
 };
