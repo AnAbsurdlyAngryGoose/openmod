@@ -14,6 +14,7 @@ export const SJ_SIGNS_OF_LIFE = 'signs-of-life-job';
 
 export const CRON_SIGNS_OF_LIFE = "0 12 * * *"
 export const CRON_FORWARD_EVENTS = '* * * * *';
+export const CRON_PROCESS_EVENTS = '* * * * *';
 
 /** redis keys */
 
@@ -25,7 +26,7 @@ export const RK_TRANSMISSION_QUEUE = 'events-for-processing';
 
 /** batch sizes */
 
-export const BS_EVENTS = 10;
+export const BS_EVENTS = 50;
 export const BS_SIGNS_OF_LIFE = 50;
 
 /** lookups */

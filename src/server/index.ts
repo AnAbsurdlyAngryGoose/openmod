@@ -2,7 +2,7 @@ import { ScheduledJobEvent, TriggerContext } from "@devvit/public-api";
 import { ModAction } from "@devvit/protos";
 import { Nothing, UserID } from "../types.js";
 import { future, futureDate, now } from "../temporal.js";
-import { BS_EVENTS, BS_SIGNS_OF_LIFE, RK_EVENTS, RK_PROCESSING, RK_QUEUE_LAST_REVISION, RK_SIGNS_OF_LIFE, SJ_PROCESS_QUEUE, SJ_SIGNS_OF_LIFE } from "../constants.js";
+import { BS_EVENTS, BS_SIGNS_OF_LIFE, RK_EVENTS, RK_QUEUE_LAST_REVISION, RK_SIGNS_OF_LIFE, SJ_SIGNS_OF_LIFE } from "../constants.js";
 import { WP_OPEN_MOD_EVENTS } from "../constants.js";
 import { handleMessage } from "./message-handling/index.js";
 import { ProtocolMessage } from "../protocol.js";
@@ -53,33 +53,13 @@ export const onWikiRevision = async (event: ModAction, context: TriggerContext) 
     });
     await context.redis.zAdd(RK_EVENTS, ...members);
     console.debug(`added ${members.length} events to the queue`);
-
-    // check for the processor sentinel and bail if it's already running
-    const processing = await context.redis.get(RK_PROCESSING);
-    if (processing) {
-        console.warn('queue is already being processed');
-        return;
-    }
-    await context.redis.set(RK_PROCESSING, 'true');
-
-    // kick-off the scheduled task that will do the actual processing
-    await context.scheduler.runJob({
-        name: SJ_PROCESS_QUEUE,
-        runAt: futureDate({ seconds: 1 })
-    });
-    console.debug('scheduled processing of the queue for one second from now');
 };
 
 export const onProcessMessageQueue = async (event: ScheduledJobEvent<Nothing>, context: TriggerContext) => {
-    await context.redis.set(RK_PROCESSING, 'true');
-
     // zRange gets members in ascending order
     const members = await context.redis.zRange(RK_EVENTS, 0, now(), { by: 'score' });
     if (members.length === 0) {
         console.debug('the queue is empty and kitty is pleased');
-
-        // remove the processing sentinel so that future wiki revisions trigger this job
-        await context.redis.del(RK_PROCESSING);
         return;
     }
 
@@ -95,13 +75,10 @@ export const onProcessMessageQueue = async (event: ScheduledJobEvent<Nothing>, c
         console.debug(`finished processing event`);
     }
 
-    // run this loop again in one second
-    // we'll bail at the top once there's nothing left to do
-    await context.scheduler.runJob({
-        name: SJ_PROCESS_QUEUE,
-        runAt: futureDate({ seconds: 1 })
-    });
-    console.debug('scheduled additional processing of the queue for one second from now');
+    if (members.length > BS_EVENTS) {
+        const cardinality = await context.redis.zCard(RK_EVENTS);
+        console.debug(`there are still ${cardinality} events in the queue, i'll continue processing in one minute`);
+    }
 };
 
 export const onCheckSignsOfLife = async (event: ScheduledJobEvent<Nothing>, context: TriggerContext) => {

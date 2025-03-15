@@ -1,6 +1,6 @@
 import { AppUpgrade, AppInstall } from "@devvit/protos";
 import { TriggerContext } from "@devvit/public-api";
-import { CRON_FORWARD_EVENTS, SJ_FORWARD_EVENTS, SJ_SIGNS_OF_LIFE, CRON_SIGNS_OF_LIFE, RK_PROCESSING } from "./constants.js";
+import { CRON_FORWARD_EVENTS, SJ_FORWARD_EVENTS, SJ_SIGNS_OF_LIFE, CRON_SIGNS_OF_LIFE, SJ_PROCESS_QUEUE, CRON_PROCESS_EVENTS } from "./constants.js";
 
 export const onAppInstallAndUpgrade = async (_: AppInstall | AppUpgrade, context: TriggerContext) => {
     const scheduledJobs = await context.scheduler.listJobs();
@@ -19,6 +19,9 @@ export const onAppInstallAndUpgrade = async (_: AppInstall | AppUpgrade, context
     });
     console.debug(`scheduled ${SJ_SIGNS_OF_LIFE}, it is job ${sjSignsOfLife}`);
 
-    await context.redis.del(RK_PROCESSING);
-    console.debug(`cleared ${RK_PROCESSING}`);
+    const sjProcessing = await context.scheduler.runJob({
+        name: SJ_PROCESS_QUEUE,
+        cron: CRON_PROCESS_EVENTS
+    });
+    console.debug(`scheduled ${SJ_PROCESS_QUEUE}, it is job ${sjProcessing}`);
 };
